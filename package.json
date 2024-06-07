@@ -14,6 +14,7 @@
     "@arweave-wallet-kit/core": "^0.0.1-beta.5",
     "@arweave-wallet-kit/react": "^0.0.1-beta.3",
     "@arweave-wallet-kit/styles": "^0.0.1-beta.3",
+    "@permaweb/aoconnect": "^0.0.55",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.23.1"
