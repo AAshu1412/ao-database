@@ -11,10 +11,10 @@ export default function Navbar() {
         <div className="col-start-3 col-span-1 text-xl">
           <ul className="h-24 flex flex-row justify-center items-center gap-10 ">
             <li>
-              <NavLink to="/">Home</NavLink>
+              <NavLink to="/">Front</NavLink>
             </li>
             <li>
-              <NavLink to="/contact">Contact</NavLink>
+              <NavLink to="/home">Home</NavLink>
             </li>
             <li>
               <NavLink to="/services">Services</NavLink>
