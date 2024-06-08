@@ -20,7 +20,9 @@ export default function Home() {
       /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g,
       ""
     );
-  /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
   // SPWAN ------------------------------------------------------
 
   const check = async () => {
@@ -35,27 +37,11 @@ export default function Home() {
     setIsProcessLoad(true);
   };
 
-  /////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  /////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  // const setUpLsqlite3 = async () => {
-  //   const messageId = await message({
-  //     process: currentProcessID,
-  //     signer: createDataItemSigner(window.arweaveWallet),
-  //     tags: [{ name: "Action", value: "Eval" }],
-  //     data: `sqlite3 = require('lsqlite3')
-  //   db = db or sqlite3.open_memory()
-  //   return "OK"`,
-  //   });
-  //   console.log("idddddd " + messageId);
-  //   let res1 = await result({
-  //     message: messageId,
-  //     process: currentProcessID,
-  //   });
-  //   console.log("data " + JSON.stringify(res1));
-  // };
-  // setUpLsqlite3();
+ // Getting the all the columns name ----------------------------------------------------
 
   const showingAllColumns = async () => {
     const messageId = await message({
@@ -91,6 +77,10 @@ return all_attribute`,
     extractValues(_data);
   };
 
+
+
+//  Load The New Database with column ID as a default -------------------------------------------------
+
   const load = async () => {
     const messageId = await message({
       process: currentProcessID,
@@ -121,6 +111,9 @@ InitDb()
     showingAllColumns();
   };
 
+
+// Setting new column as per the requirement of the user --------------------------------------------------------
+
   const addingColumn = async (event) => {
     event.preventDefault();
     const messageId = await message({
@@ -144,6 +137,9 @@ add_column("MyDatabase", "${addColumn.name}","${addColumn.data_type}") `,
     console.log("addingColumn data " + JSON.stringify(res1));
     showingAllColumns();
   };
+
+
+// Adding the Data in the Database -------------------------------------------------------
 
   const addingDataInDatabase = async (data) => {
     const values = convertToArrayString(data);
@@ -187,10 +183,11 @@ insert_values_into_table("MyDatabase", values) `,
     console.log("addingColumn data " + JSON.stringify(res1));
   };
 
-  /////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  // console.log("fooooooooooo : " + allProcessID.length);
-  // console.log(currentProcessID);
+ 
+  // Getting the array in JS of the column name ----------------------------------------
+
   const extractValues = (str) => {
     // Remove the curly braces and whitespace
     const trimmedStr = str.replace(/[{}]/g, "").trim();
@@ -204,6 +201,9 @@ insert_values_into_table("MyDatabase", values) `,
     console.log("ppppppppppppppoooooo : " + valuesArray);
     setAllColumn(valuesArray);
   };
+
+
+ // Helping in getting the value (data for database) to pass the SQL query to set up data ---------------------------------
 
   const convertToArrayString = (str) => {
     // Split the string by commas
@@ -226,12 +226,17 @@ insert_values_into_table("MyDatabase", values) `,
     return resultString;
   };
 
+
+// Column Input handling function ------------------------------------------------------------
+
   const handleInput = (event) => {
     const name = event.target.name;
     const value = event.target.value;
     console.log("addColumn " + name, value);
     setAddColumn({ ...addColumn, [name]: value });
   };
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   return (
     <div className="flex flex-col mt-10 mx-4 gap-8">
