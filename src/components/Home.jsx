@@ -15,7 +15,11 @@ export default function Home() {
   const [allColumn, setAllColumn] = useState([]); //  Array of the column name
   const [addDataInDatabase, setAddDataInDatabase] = useState(""); // Add Data in the Database (Input)
   const [allData, setAllData] = useState([]); //  Array of the database all data
-  const [updateColumn, setUpdateColumn] = useState({ column_name: "", new_column_data: "",id:0});
+  const [updateColumn, setUpdateColumn] = useState({
+    column_name: "",
+    new_column_data: "",
+    id: 0,
+  });
   const [isProcessCreationDone, setIsProcessCreationDone] = useState(false);
   const [isProcessLoad, setIsProcessLoad] = useState(false);
 
@@ -312,11 +316,9 @@ delete_values_into_table("MyDatabase","ID",${deleting_data_id});  `,
     }
   };
 
+  // Updating any data in the database ------------------------------------------------------
 
-
-// Updating any data in the database ------------------------------------------------------
-
-  const updatingData=async(event)=>{
+  const updatingData = async (event) => {
     try {
       event.preventDefault();
       const messageId = await message({
@@ -348,7 +350,7 @@ update_values_into_table("MyDatabase","${updateColumn.column_name}","${updateCol
       console.log(error);
       toast.error("Data Not Updated");
     }
-  }
+  };
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -421,10 +423,10 @@ update_values_into_table("MyDatabase","${updateColumn.column_name}","${updateCol
     setAddColumn({ ...addColumn, [name]: value });
   };
 
-  const handleUpdateDataFunction=(process_id)=>{
-    // const [updateColumn, setUpdateColumn] = useState({ column_name: "", new_column_data: "",id:0});  
-    setUpdateColumn({ column_name: "", new_column_data: "",id:process_id});
-  }
+  const handleUpdateDataFunction = (process_id) => {
+    // const [updateColumn, setUpdateColumn] = useState({ column_name: "", new_column_data: "",id:0});
+    setUpdateColumn({ column_name: "", new_column_data: "", id: process_id });
+  };
 
   const handleUpdateInput = (event) => {
     const name = event.target.name;
@@ -555,11 +557,11 @@ update_values_into_table("MyDatabase","${updateColumn.column_name}","${updateCol
         </div>
       </div>
       <div className="w-full flex gap-16">
-      <div className="w-[65%] overflow-x-auto">
-        <table className="w-full border border-gray-300 rounded-lg overflow-hidden">
-          <thead className="bg-gray-200">
-            {/* <tr> */}
-            {/* {isProcessCreationDone? <tr> {allColumn.map((val, key) => {
+        <div className="w-[65%] overflow-x-auto">
+          <table className="w-full border border-gray-300 rounded-lg overflow-hidden">
+            <thead className="bg-gray-200">
+              {/* <tr> */}
+              {/* {isProcessCreationDone? <tr> {allColumn.map((val, key) => {
                 return (
                   <th key={key} className="border px-4 py-2">
                     {val}
@@ -568,57 +570,65 @@ update_values_into_table("MyDatabase","${updateColumn.column_name}","${updateCol
                 );
               })}
               <th className="border px-4 py-2">DELETE</th></tr>:<tr></tr>} */}
-            <tr>
-              {allColumn.map((columnName, index) => (
-                <th key={index} className="border px-4 py-2 text-xl">
-                  {columnName}
-                </th>
-              ))}
-              {/* <th className="border px-4 py-2 text-xl">
+              <tr>
+                {allColumn.map((columnName, index) => (
+                  <th key={index} className="border px-4 py-2 text-xl">
+                    {columnName}
+                  </th>
+                ))}
+                {/* <th className="border px-4 py-2 text-xl">
                 {isProcessLoad ? "DELETE" : "DATABASE"}
               </th> */}
-              
-                {isProcessLoad ? <><th className="border px-4 py-2 text-xl">UPDATE</th><th className="border px-4 py-2 text-xl">DELETE</th></> : <th className="border px-4 py-2 text-xl">DATABASE</th>}
-              
-            </tr>
 
-            {/* <th className="border px-4 py-2">Name</th>
+                {isProcessLoad ? (
+                  <>
+                    <th className="border px-4 py-2 text-xl">UPDATE</th>
+                    <th className="border px-4 py-2 text-xl">DELETE</th>
+                  </>
+                ) : (
+                  <th className="border px-4 py-2 text-xl">DATABASE</th>
+                )}
+              </tr>
+
+              {/* <th className="border px-4 py-2">Name</th>
               <th className="border px-4 py-2">Email</th>
               <th className="border px-4 py-2">Message</th>
               <th className="border px-4 py-2">Delete</th> */}
-            {/*  </tr> */}
-          </thead>
-          <tbody>
-            {allData.map((curUser, index) => (
-              <tr
-                key={index}
-                className={
-                  index % 2 === 0 ? "even:bg-gray-100" : "odd:bg-white"
-                }
-              >
-                {allColumn.map((columnName, columnIndex) => (
-                  <td
-                    key={columnIndex}
-                    className="border px-4 py-2 whitespace-nowrap text-xl"
-                  >
-                    {curUser[columnName]}
+              {/*  </tr> */}
+            </thead>
+            <tbody>
+              {allData.map((curUser, index) => (
+                <tr
+                  key={index}
+                  className={
+                    index % 2 === 0 ? "even:bg-gray-100" : "odd:bg-white"
+                  }
+                >
+                  {allColumn.map((columnName, columnIndex) => (
+                    <td
+                      key={columnIndex}
+                      className="border px-4 py-2 whitespace-nowrap text-xl"
+                    >
+                      {curUser[columnName]}
+                    </td>
+                  ))}
+                  <td className="border px-4 py-2 bg-orange-600 rounded-md text-center text-xl font-medium">
+                    <button onClick={() => deletingData(curUser.ID)}>
+                      Delete
+                    </button>
                   </td>
-                ))}
-                <td className="border px-4 py-2 bg-orange-600 rounded-md text-center text-xl font-medium">
-                  <button onClick={() => deletingData(curUser.ID)}>
-                    Delete
-                  </button>
-                </td>
-                <td className="border px-4 py-2 bg-orange-600 rounded-md text-center text-xl font-medium">
-                  <button onClick={() => handleUpdateDataFunction(curUser.ID)}>
-                    UPDATE
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
+                  <td className="border px-4 py-2 bg-orange-600 rounded-md text-center text-xl font-medium">
+                    <button
+                      onClick={() => handleUpdateDataFunction(curUser.ID)}
+                    >
+                      UPDATE
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
 
-          {/* ///////////////////////////////////////////////
+            {/* ///////////////////////////////////////////////
       <tbody>
         {allData.map((curUser, index) => (
           <tr key={index} className={index % 2 === 0 ? "even:bg-gray-100" : "odd:bg-white"}>
@@ -636,15 +646,17 @@ update_values_into_table("MyDatabase","${updateColumn.column_name}","${updateCol
         ))}
       </tbody>
       ///////////////////////////////////////////// */}
-        </table>
-      </div>
-      <div className="w-[30%] flex flex-col gap-8 px-16 py-6 bg-orange-500">
+          </table>
+        </div>
+        <div className="w-[30%] flex flex-col gap-8 px-16 py-6 bg-orange-500">
           <h1 className="text-7xl font-bold underline underline-offset-4">
-            UPDATE <br/> (ID - {updateColumn.id})
+            UPDATE <br /> (ID - {updateColumn.id})
           </h1>
           <form onSubmit={updatingData} className="flex flex-col gap-4">
             <div className="flex flex-col gap-2 text-xl">
-              <label htmlFor="name">Enter The Column Name (Which You Wanna Update) </label>
+              <label htmlFor="name">
+                Enter The Column Name (Which You Wanna Update){" "}
+              </label>
               <input
                 type="text"
                 required
@@ -672,7 +684,7 @@ update_values_into_table("MyDatabase","${updateColumn.column_name}","${updateCol
                 className="h-10 text-xl px-2 py-4 border-black border-2 rounded-md"
               ></input>
             </div>
-            
+
             <button
               type="submit"
               className="bg-orange-600 w-40 h-10 text-xl font-medium rounded-md mt-4"
@@ -682,7 +694,6 @@ update_values_into_table("MyDatabase","${updateColumn.column_name}","${updateCol
           </form>
         </div>
       </div>
-      
     </div>
   );
 }
