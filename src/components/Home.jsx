@@ -680,7 +680,7 @@ update_values_into_table("MyDatabase","${updateColumn.column_name}","${updateCol
                 onChange={handleUpdateInput}
                 name="new_column_data"
                 id="new_column_data"
-                placeholder="Enter The Password"
+                placeholder="Enter The Data"
                 className="h-10 text-xl px-2 py-4 border-black border-2 rounded-md"
               ></input>
             </div>
