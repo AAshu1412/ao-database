@@ -7,12 +7,13 @@ import {
 import { useEffect, useState } from "react";
 
 export default function Home() {
-  const [allProcessID, setAllProcessID] = useState([]);
-  const [userOwnProcessID, setUserOwnProcessID] = useState("");
-  const [currentProcessID, setCurrentProcessID] = useState("");
-  const [addColumn, setAddColumn] = useState({ name: "", data_type: "" });
-  const [allColumn, setAllColumn] = useState([]);
-  const [addDataInDatabase, setAddDataInDatabase] = useState("");
+  const [allProcessID, setAllProcessID] = useState([]); // Getting the list of the process ID
+  const [userOwnProcessID, setUserOwnProcessID] = useState(""); // Getting Process ID from the User (Input)
+  const [currentProcessID, setCurrentProcessID] = useState(""); // Current Process that is in use
+  const [addColumn, setAddColumn] = useState({ name: "", data_type: "" }); // Column name and data type (Input)
+  const [allColumn, setAllColumn] = useState([]); //  Array of the column name
+  const [addDataInDatabase, setAddDataInDatabase] = useState(""); // Add Data in the Database (Input)
+  const [allData, setAllData] = useState([]); //  Array of the database all data
   const [isProcessLoad, setIsProcessLoad] = useState(false);
 
   const stripAnsiCodes = (str) =>
@@ -21,7 +22,7 @@ export default function Home() {
       ""
     );
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   // SPWAN ------------------------------------------------------
 
@@ -37,11 +38,11 @@ export default function Home() {
     setIsProcessLoad(true);
   };
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
- // Getting the all the columns name ----------------------------------------------------
+  // Getting the all the columns name ----------------------------------------------------
 
   const showingAllColumns = async () => {
     const messageId = await message({
@@ -74,12 +75,11 @@ return all_attribute`,
     );
 
     const _data = stripAnsiCodes(res1.Output.data.output);
-    extractValues(_data);
+    const valuesArray = extractValues(_data);
+    setAllColumn(valuesArray);
   };
 
-
-
-//  Load The New Database with column ID as a default -------------------------------------------------
+  //  Load The New Database with column ID as a default -------------------------------------------------
 
   const load = async () => {
     const messageId = await message({
@@ -111,8 +111,7 @@ InitDb()
     showingAllColumns();
   };
 
-
-// Setting new column as per the requirement of the user --------------------------------------------------------
+  // Setting new column as per the requirement of the user --------------------------------------------------------
 
   const addingColumn = async (event) => {
     event.preventDefault();
@@ -138,8 +137,7 @@ add_column("MyDatabase", "${addColumn.name}","${addColumn.data_type}") `,
     showingAllColumns();
   };
 
-
-// Adding the Data in the Database -------------------------------------------------------
+  // Adding the Data in the Database -------------------------------------------------------
 
   const addingDataInDatabase = async (data) => {
     const values = convertToArrayString(data);
@@ -175,17 +173,69 @@ end
 local values = ${values}
 insert_values_into_table("MyDatabase", values) `,
     });
-    console.log("addingColumn idddddd " + messageId);
+    console.log("addingDataInDatabase idddddd " + messageId);
     let res1 = await result({
       message: messageId,
       process: currentProcessID,
     });
-    console.log("addingColumn data " + JSON.stringify(res1));
+    console.log("addingDataInDatabase data " + JSON.stringify(res1));
   };
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Getting the data in the database for the display -------------------------------------
 
- 
+  const gettingDataInDatabase = async () => {
+    const messageId = await message({
+      process: currentProcessID,
+      signer: createDataItemSigner(window.arweaveWallet),
+      tags: [{ name: "Action", value: "Eval" }],
+      data: `
+attr_info = {}
+local function get_table_columns(table_name)
+     local columns = {}
+    for row in db:nrows("PRAGMA table_info(" .. table_name .. ");") do
+        columns[#columns + 1] = row.name
+    end
+    return columns
+end
+
+local function fetch_all_data(table_name)
+    local columns = get_table_columns(table_name)
+
+    for row in db:nrows("SELECT * FROM " .. table_name) do
+        local processed_row = {}
+        for _, column in ipairs(columns) do
+            processed_row[column] = row[column] or "NULL"
+        end
+        table.insert(attr_info, processed_row)
+    end
+
+end
+
+fetch_all_data("MyDatabase")
+
+
+return attr_info`,
+    });
+    console.log("gettingDataInDatabase idddddd " + messageId);
+    let res1 = await result({
+      message: messageId,
+      process: currentProcessID,
+    });
+    // console.log("gettingDataInDatabase data " +  stripAnsiCodes(res1.Output.data.output));
+    console.log(
+      "gettingDataInDatabase data " + stripAnsiCodes(res1.Output.data.output)
+    );
+    console.log(
+      "gettingDataInDatabase type " +
+        typeof stripAnsiCodes(res1.Output.data.output)
+    );
+    const _data = stripAnsiCodes(res1.Output.data.output);
+    const resultArray = convertToArray(_data);
+    setAllData(resultArray);
+  };
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
   // Getting the array in JS of the column name ----------------------------------------
 
   const extractValues = (str) => {
@@ -199,11 +249,10 @@ insert_values_into_table("MyDatabase", values) `,
     console.log("ppppppppppppppoooooo : " + typeof valuesArray);
 
     console.log("ppppppppppppppoooooo : " + valuesArray);
-    setAllColumn(valuesArray);
+    return valuesArray;
   };
 
-
- // Helping in getting the value (data for database) to pass the SQL query to set up data ---------------------------------
+  // Helping in getting the value (data for database) to pass the SQL query to set up data ---------------------------------
 
   const convertToArrayString = (str) => {
     // Split the string by commas
@@ -226,8 +275,28 @@ insert_values_into_table("MyDatabase", values) `,
     return resultString;
   };
 
+  // Getting the array of the data filled in the database
 
-// Column Input handling function ------------------------------------------------------------
+  const convertToArray = (str) => {
+    // Step 1: Replace equals signs (=) with colons (:)
+    let jsonStr = str.replace(/=/g, ":");
+
+    // Step 2: Replace single quotes with double quotes
+    jsonStr = jsonStr.replace(/'/g, '"');
+
+    // Step 3: Wrap property names with double quotes
+    jsonStr = jsonStr.replace(/(\w+)\s*:/g, '"$1":');
+
+    // Step 4: Wrap the entire string in square brackets to create a valid JSON array
+    jsonStr = jsonStr.replace(/\{(.+?)\}/gs, "{$1}");
+    jsonStr = `[${jsonStr.slice(1, -1)}]`;
+
+    // Step 5: Parse the JSON string into a JavaScript object
+    const jsonObject = JSON.parse(jsonStr);
+
+    return jsonObject;
+  };
+  // Column Input handling function ------------------------------------------------------------
 
   const handleInput = (event) => {
     const name = event.target.name;
@@ -236,7 +305,7 @@ insert_values_into_table("MyDatabase", values) `,
     setAddColumn({ ...addColumn, [name]: value });
   };
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   return (
     <div className="flex flex-col mt-10 mx-4 gap-8">
@@ -282,10 +351,13 @@ insert_values_into_table("MyDatabase", values) `,
           </button>
           <button className="bg-orange-600 w-24 h-10 text-xl font-medium rounded-md" onClick={newDatabase}>
             Database
-          </button>
-          <button className="bg-orange-600 w-24 h-10 text-xl font-medium rounded-md" onClick={allAttributeField}>
-            Attr
           </button> */}
+          <button
+            className="bg-orange-600 w-24 h-10 text-xl font-medium rounded-md"
+            onClick={gettingDataInDatabase}
+          >
+            data
+          </button>
         </div>
       </div>
       <div className="border-black	border-2 rounded-md p-10">
@@ -362,36 +434,72 @@ insert_values_into_table("MyDatabase", values) `,
       <div className="overflow-x-auto">
         <table className="w-[100%] border border-gray-300 rounded-lg overflow-hidden">
           <thead className="bg-gray-200">
-            <tr>
-              {allColumn.map((val, key) => {
+            {/* <tr> */}
+            {/* {isProcessLoad? <tr> {allColumn.map((val, key) => {
                 return (
                   <th key={key} className="border px-4 py-2">
                     {val}
                   </th>
+                  
                 );
               })}
-              {/* <th className="border px-4 py-2">Name</th>
+              <th className="border px-4 py-2">DELETE</th></tr>:<tr></tr>} */}
+            <tr>
+              {allColumn.map((columnName, index) => (
+                <th key={index} className="border px-4 py-2">
+                  {columnName}
+                </th>
+              ))}
+              <th className="border px-4 py-2">Actions</th>
+            </tr>
+
+            {/* <th className="border px-4 py-2">Name</th>
               <th className="border px-4 py-2">Email</th>
               <th className="border px-4 py-2">Message</th>
               <th className="border px-4 py-2">Delete</th> */}
-            </tr>
+            {/*  </tr> */}
           </thead>
-          {/* <tbody>
-              {contacts.map((curUser, index) => (
-                <tr key={index} className="even:bg-gray-100 odd:bg-white">
-                  <td className="border px-4 py-2 whitespace-nowrap">
-                    {curUser.username}
+          <tbody>
+            {allData.map((curUser, index) => (
+              <tr
+                key={index}
+                className={
+                  index % 2 === 0 ? "even:bg-gray-100" : "odd:bg-white"
+                }
+              >
+                {allColumn.map((columnName, columnIndex) => (
+                  <td
+                    key={columnIndex}
+                    className="border px-4 py-2 whitespace-nowrap"
+                  >
+                    {curUser[columnName]}
                   </td>
-                  <td className="border px-4 py-2">{curUser.email}</td>
-                  <td className="border px-4 py-2">{curUser.message}</td>
-                  <td className="border px-4 py-2">
-                    <button onClick={() => deleteContact(curUser._id)}>
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody> */}
+                ))}
+                <td className="border px-4 py-2">
+                  <button>Delete</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+
+          {/* ///////////////////////////////////////////////
+      <tbody>
+        {allData.map((curUser, index) => (
+          <tr key={index} className={index % 2 === 0 ? "even:bg-gray-100" : "odd:bg-white"}>
+            {Object.keys(curUser).map((key) => (
+              <td key={key} className="border px-4 py-2 whitespace-nowrap">
+                {curUser[key]}
+              </td>
+            ))}
+            <td className="border px-4 py-2">
+              <button>
+                Delete
+              </button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+      ///////////////////////////////////////////// */}
         </table>
       </div>
     </div>
