@@ -4,7 +4,8 @@ import App from './App.jsx'
 import './index.css'
 import { ArweaveWalletKit } from "@arweave-wallet-kit/react";
 import ArConnectStrategy from "@arweave-wallet-kit/arconnect-strategy";
-
+import {ToastContainer} from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
@@ -21,6 +22,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       }}
     >
       <App />
+      <ToastContainer/>
     </ArweaveWalletKit>
   </React.StrictMode>
 );

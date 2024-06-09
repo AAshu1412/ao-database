@@ -5,6 +5,7 @@ import {
   result,
 } from "@permaweb/aoconnect";
 import { useEffect, useState } from "react";
+import {toast} from "react-toastify";
 
 export default function Home() {
   const [allProcessID, setAllProcessID] = useState([]); // Getting the list of the process ID
@@ -28,15 +29,22 @@ export default function Home() {
   // SPWAN ------------------------------------------------------
 
   const check = async () => {
-    const processId = await spawn({
-      module: "sBmq5pehE1_Ed5YBs4DGV4FMftoKwo_cVVsCpPND36Q",
-      scheduler: "_GQ33BkPtZrqxA84vM8Zk-N2aO0toNNu_C-l-rawrBA",
-      signer: createDataItemSigner(window.arweaveWallet),
-    });
-    console.log(processId);
-    setAllProcessID([...allProcessID, processId]);
-    setCurrentProcessID(processId);
-    setIsProcessCreationDone(true);
+    try {
+      const processId = await spawn({
+        module: "sBmq5pehE1_Ed5YBs4DGV4FMftoKwo_cVVsCpPND36Q",
+        scheduler: "_GQ33BkPtZrqxA84vM8Zk-N2aO0toNNu_C-l-rawrBA",
+        signer: createDataItemSigner(window.arweaveWallet),
+      });
+      console.log(processId);
+      setAllProcessID([...allProcessID, processId]);
+      setCurrentProcessID(processId);
+      setIsProcessCreationDone(true);
+      toast.success("Successfully Creation of Process ID ");
+    } catch (error) {
+      console.log(error);
+      toast.error("Unsuccessful Creation of Process ID ");
+    }
+    
   };
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -83,39 +91,46 @@ return all_attribute`,
   //  Load The New Database with column ID as a default -------------------------------------------------
 
   const load = async () => {
-    const messageId = await message({
-      process: currentProcessID,
-      signer: createDataItemSigner(window.arweaveWallet),
-      tags: [{ name: "Action", value: "Eval" }],
-      data: `sqlite3 = require('lsqlite3')
-    db = db or sqlite3.open_memory()
-    MYDATABASE = [[
-CREATE TABLE IF NOT EXISTS MyDatabase (
-  ID INTEGER PRIMARY KEY AUTOINCREMENT
-);
-]]
-
-
-function InitDb() 
-db:exec(MYDATABASE)
-end
-
-InitDb()
-`,
-    });
-    console.log("load idddddd " + messageId);
-    let res1 = await result({
-      message: messageId,
-      process: currentProcessID,
-    });
-    console.log("load data " + JSON.stringify(res1));
-    showingAllColumns();
-    setIsProcessLoad(true);
+    try {
+      const messageId = await message({
+        process: currentProcessID,
+        signer: createDataItemSigner(window.arweaveWallet),
+        tags: [{ name: "Action", value: "Eval" }],
+        data: `sqlite3 = require('lsqlite3')
+      db = db or sqlite3.open_memory()
+      MYDATABASE = [[
+  CREATE TABLE IF NOT EXISTS MyDatabase (
+    ID INTEGER PRIMARY KEY AUTOINCREMENT
+  );
+  ]]
+  
+  
+  function InitDb() 
+  db:exec(MYDATABASE)
+  end
+  
+  InitDb()
+  `,
+      });
+      console.log("load idddddd " + messageId);
+      let res1 = await result({
+        message: messageId,
+        process: currentProcessID,
+      });
+      console.log("load data " + JSON.stringify(res1));
+      await showingAllColumns();
+      toast.success("Process Load Successfully");
+      setIsProcessLoad(true);
+    } catch (error) {
+      console.log(error);
+      toast.error("Process Load Unsuccessfully");
+    }
   };
 
   // Setting new column as per the requirement of the user --------------------------------------------------------
 
   const addingColumn = async (event) => {
+  try {
     event.preventDefault();
     const messageId = await message({
       process: currentProcessID,
@@ -136,13 +151,19 @@ add_column("MyDatabase", "${addColumn.name}","${addColumn.data_type}") `,
       process: currentProcessID,
     });
     console.log("addingColumn data " + JSON.stringify(res1));
-    showingAllColumns();
+    await showingAllColumns();
+    toast.success("Column is Created Successfully");
+  } catch (error) {
+    console.log(error);
+    toast.error("Column is not Created");
+  }
   };
 
   // Adding the Data in the Database -------------------------------------------------------
 
   const addingDataInDatabase = async (data) => {
-    const values = convertToArrayString(data);
+    try {
+      const values = convertToArrayString(data);
     const messageId = await message({
       process: currentProcessID,
       signer: createDataItemSigner(window.arweaveWallet),
@@ -181,6 +202,12 @@ insert_values_into_table("MyDatabase", values) `,
       process: currentProcessID,
     });
     console.log("addingDataInDatabase data " + JSON.stringify(res1));
+    await gettingDataInDatabase();
+    toast.success("Data is Successfully Filled");
+    } catch (error) {
+      console.log(error);
+      toast.error("Data not able to Filled");
+    }
   };
 
   // Getting the data in the database for the display -------------------------------------
@@ -239,6 +266,7 @@ return attr_info`,
 // Deleting data from the database -------------------------------------
 
     const deletingData = async (deleting_data_id) => {
+     try {
       const messageId = await message({
         process: currentProcessID,
         signer: createDataItemSigner(window.arweaveWallet),
@@ -264,6 +292,12 @@ delete_values_into_table("MyDatabase","ID",${deleting_data_id});  `,
       console.log(
         "deletingData data " + JSON.stringify(res1)
       );
+      await gettingDataInDatabase();
+      toast.success("Data Deleted Successfully");
+     } catch (error) {
+      console.log(error);
+      toast.error("Data Not Deleted");
+     }
     };
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -383,13 +417,13 @@ delete_values_into_table("MyDatabase","ID",${deleting_data_id});  `,
           </button>
           <button className="bg-orange-600 w-24 h-10 text-xl font-medium rounded-md" onClick={newDatabase}>
             Database
-          </button> */}
+          </button>
           <button
             className="bg-orange-600 w-24 h-10 text-xl font-medium rounded-md"
             onClick={gettingDataInDatabase}
           >
             data
-          </button>
+          </button> */}
         </div>
       </div>
       <div className="border-black	border-2 rounded-md p-10">
