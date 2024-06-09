@@ -3,6 +3,9 @@
 <p align="center">
   <img src="./src/assets/ao_database.png" alt="AO DATABASE PLATFORM" width="100%">
 </p>
+<p align="center">
+  <img src="./src/assets/ao_database2.png" alt="AO DATABASE PLATFORM" width="100%">
+</p>
 
 <p align="center">Welcome to AO DATABASE, your platform for effortlessly creating and managing databases through an intuitive graphical interface, enabling seamless functions such as updates and deletions etc.</p>
 
