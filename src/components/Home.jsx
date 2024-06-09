@@ -6,6 +6,7 @@ import {
 } from "@permaweb/aoconnect";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import Ripples from "react-ripples";
 
 export default function Home() {
   const [allProcessID, setAllProcessID] = useState([]); // Getting the list of the process ID
@@ -445,21 +446,33 @@ update_values_into_table("MyDatabase","${updateColumn.column_name}","${updateCol
             <h1 className="flex items-center justify-center bg-orange-600 w-[550px] h-10 text-xl font-medium rounded-md">
               {currentProcessID}
             </h1>
-            <button
-              className="bg-orange-600 w-24 h-10 text-xl font-medium rounded-md"
-              onClick={load}
+            <Ripples
+              color="black"
+              during={1200}
+              placeholder={"Random Anything"}
             >
-              Load
-            </button>
+              <button
+                className="bg-orange-600 w-24 h-10 text-xl font-medium rounded-md"
+                onClick={load}
+              >
+                Load
+              </button>
+            </Ripples>
           </div>
         ) : (
           <div className="border-black	border-2 rounded-md p-4">
-            <button
-              onClick={check}
-              className="bg-orange-600 w-64 h-10 text-xl font-medium rounded-md "
+            <Ripples
+              color="black"
+              during={1200}
+              placeholder={"Random Anything"}
             >
-              + Create New Process
-            </button>
+              <button
+                onClick={check}
+                className="bg-orange-600 w-64 h-10 text-xl font-medium rounded-md "
+              >
+                + Create New Process
+              </button>
+            </Ripples>
           </div>
         )}
         {/* To Be Continued ----------------------------------------------------------
@@ -521,13 +534,18 @@ update_values_into_table("MyDatabase","${updateColumn.column_name}","${updateCol
                 />
               </div>
             </div>
-
-            <button
-              className="bg-orange-600 w-24 h-10 text-xl font-medium rounded-md"
-              type="submit"
+            <Ripples
+              color="black"
+              during={1200}
+              placeholder={"Random Anything"}
             >
-              Add
-            </button>
+              <button
+                className="bg-orange-600 w-24 h-10 text-xl font-medium rounded-md"
+                type="submit"
+              >
+                Add
+              </button>
+            </Ripples>
           </form>
         </div>
       </div>
@@ -547,13 +565,14 @@ update_values_into_table("MyDatabase","${updateColumn.column_name}","${updateCol
             id="data_type"
             className="w-[70%] h-10 text-xl px-2 py-4 border-black border-2 rounded-md"
           />
-
-          <button
-            className="bg-orange-600 w-24 h-10 text-xl font-medium rounded-md"
-            onClick={() => addingDataInDatabase(addDataInDatabase)}
-          >
-            Add
-          </button>
+          <Ripples color="black" during={1200} placeholder={"Random Anything"}>
+            <button
+              className="bg-orange-600 w-24 h-10 text-xl font-medium rounded-md"
+              onClick={() => addingDataInDatabase(addDataInDatabase)}
+            >
+              Add
+            </button>
+          </Ripples>
         </div>
       </div>
       <div className="w-full flex gap-16">
@@ -613,16 +632,29 @@ update_values_into_table("MyDatabase","${updateColumn.column_name}","${updateCol
                     </td>
                   ))}
                   <td className="border px-4 py-2 bg-orange-600 rounded-md text-center text-xl font-medium">
-                    <button onClick={() => deletingData(curUser.ID)}>
-                      Delete
-                    </button>
+                    <Ripples
+                      color="black"
+                      during={1200}
+                      placeholder={"Random Anything"}
+                    >
+                      <button onClick={() => deletingData(curUser.ID)}>
+                        Delete
+                      </button>
+                    </Ripples>
                   </td>
                   <td className="border px-4 py-2 bg-orange-600 rounded-md text-center text-xl font-medium">
-                    <button
-                      onClick={() => handleUpdateDataFunction(curUser.ID)}
+                    <Ripples
+                      color="black"
+                      during={1200}
+                      placeholder={"Random Anything"}
                     >
-                      UPDATE
-                    </button>
+                      <button
+                        onClick={() => handleUpdateDataFunction(curUser.ID)}
+                        className="w-auto"
+                      >
+                        UPDATE
+                      </button>
+                    </Ripples>
                   </td>
                 </tr>
               ))}
@@ -684,13 +716,19 @@ update_values_into_table("MyDatabase","${updateColumn.column_name}","${updateCol
                 className="h-10 text-xl px-2 py-4 border-black border-2 rounded-md"
               ></input>
             </div>
-
-            <button
-              type="submit"
-              className="bg-orange-600 w-40 h-10 text-xl font-medium rounded-md mt-4"
+            <Ripples
+              color="black"
+              during={1200}
+              placeholder={"Random Anything"}
+              className="w-auto"
             >
-              UPDATE
-            </button>
+              <button
+                type="submit"
+                className="bg-orange-600 w-40 h-10 text-xl font-medium rounded-md mt-4"
+              >
+                UPDATE
+              </button>
+            </Ripples>
           </form>
         </div>
       </div>
