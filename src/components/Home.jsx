@@ -5,7 +5,7 @@ import {
   result,
 } from "@permaweb/aoconnect";
 import { useEffect, useState } from "react";
-import {toast} from "react-toastify";
+import { toast } from "react-toastify";
 
 export default function Home() {
   const [allProcessID, setAllProcessID] = useState([]); // Getting the list of the process ID
@@ -44,7 +44,6 @@ export default function Home() {
       console.log(error);
       toast.error("Unsuccessful Creation of Process ID ");
     }
-    
   };
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -130,13 +129,13 @@ return all_attribute`,
   // Setting new column as per the requirement of the user --------------------------------------------------------
 
   const addingColumn = async (event) => {
-  try {
-    event.preventDefault();
-    const messageId = await message({
-      process: currentProcessID,
-      signer: createDataItemSigner(window.arweaveWallet),
-      tags: [{ name: "Action", value: "Eval" }],
-      data: `function add_column(table, column, data_type)
+    try {
+      event.preventDefault();
+      const messageId = await message({
+        process: currentProcessID,
+        signer: createDataItemSigner(window.arweaveWallet),
+        tags: [{ name: "Action", value: "Eval" }],
+        data: `function add_column(table, column, data_type)
 
     local add_column = string.format("ALTER TABLE %s ADD COLUMN %s %s;", table, string.upper(column),string.upper(data_type))
 
@@ -144,19 +143,19 @@ return all_attribute`,
 end
 
 add_column("MyDatabase", "${addColumn.name}","${addColumn.data_type}") `,
-    });
-    console.log("addingColumn idddddd " + messageId);
-    let res1 = await result({
-      message: messageId,
-      process: currentProcessID,
-    });
-    console.log("addingColumn data " + JSON.stringify(res1));
-    await showingAllColumns();
-    toast.success("Column is Created Successfully");
-  } catch (error) {
-    console.log(error);
-    toast.error("Column is not Created");
-  }
+      });
+      console.log("addingColumn idddddd " + messageId);
+      let res1 = await result({
+        message: messageId,
+        process: currentProcessID,
+      });
+      console.log("addingColumn data " + JSON.stringify(res1));
+      await showingAllColumns();
+      toast.success("Column is Created Successfully");
+    } catch (error) {
+      console.log(error);
+      toast.error("Column is not Created");
+    }
   };
 
   // Adding the Data in the Database -------------------------------------------------------
@@ -164,11 +163,11 @@ add_column("MyDatabase", "${addColumn.name}","${addColumn.data_type}") `,
   const addingDataInDatabase = async (data) => {
     try {
       const values = convertToArrayString(data);
-    const messageId = await message({
-      process: currentProcessID,
-      signer: createDataItemSigner(window.arweaveWallet),
-      tags: [{ name: "Action", value: "Eval" }],
-      data: `function insert_values_into_table(table, values)
+      const messageId = await message({
+        process: currentProcessID,
+        signer: createDataItemSigner(window.arweaveWallet),
+        tags: [{ name: "Action", value: "Eval" }],
+        data: `function insert_values_into_table(table, values)
     local value_string = ""
     for i, value in ipairs(values) do
 
@@ -195,15 +194,15 @@ end
 
 local values = ${values}
 insert_values_into_table("MyDatabase", values) `,
-    });
-    console.log("addingDataInDatabase idddddd " + messageId);
-    let res1 = await result({
-      message: messageId,
-      process: currentProcessID,
-    });
-    console.log("addingDataInDatabase data " + JSON.stringify(res1));
-    await gettingDataInDatabase();
-    toast.success("Data is Successfully Filled");
+      });
+      console.log("addingDataInDatabase idddddd " + messageId);
+      let res1 = await result({
+        message: messageId,
+        process: currentProcessID,
+      });
+      console.log("addingDataInDatabase data " + JSON.stringify(res1));
+      await gettingDataInDatabase();
+      toast.success("Data is Successfully Filled");
     } catch (error) {
       console.log(error);
       toast.error("Data not able to Filled");
@@ -263,10 +262,10 @@ return attr_info`,
     setAllData(resultArray);
   };
 
-// Deleting data from the database -------------------------------------
+  // Deleting data from the database -------------------------------------
 
-    const deletingData = async (deleting_data_id) => {
-     try {
+  const deletingData = async (deleting_data_id) => {
+    try {
       const messageId = await message({
         process: currentProcessID,
         signer: createDataItemSigner(window.arweaveWallet),
@@ -289,16 +288,14 @@ delete_values_into_table("MyDatabase","ID",${deleting_data_id});  `,
         message: messageId,
         process: currentProcessID,
       });
-      console.log(
-        "deletingData data " + JSON.stringify(res1)
-      );
+      console.log("deletingData data " + JSON.stringify(res1));
       await gettingDataInDatabase();
       toast.success("Data Deleted Successfully");
-     } catch (error) {
+    } catch (error) {
       console.log(error);
       toast.error("Data Not Deleted");
-     }
-    };
+    }
+  };
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -426,57 +423,62 @@ delete_values_into_table("MyDatabase","ID",${deleting_data_id});  `,
           </button> */}
         </div>
       </div>
-      <div className="border-black	border-2 rounded-md p-10">
-        <form
-          onSubmit={addingColumn}
-          className="flex justify-around items-center"
-        >
-          <div className="flex gap-20 items-center">
-            <div className="flex gap-2 items-center">
-              <label className="text-3xl font-medium">
-                Create New Column :{" "}
-              </label>
-              <input
-                type="text"
-                required
-                autoComplete="off"
-                placeholder="Enter The Column"
-                value={addColumn.name}
-                onChange={handleInput}
-                name="name"
-                id="name"
-                className="h-10 text-xl px-2 py-4 border-black border-2 rounded-md"
-              />
-            </div>
-            <div className="flex gap-2 items-center">
-              <label className="text-3xl font-medium">
-                Create New Column :{" "}
-              </label>
-              <input
-                type="text"
-                required
-                autoComplete="off"
-                placeholder="Enter The Column Data Type"
-                value={addColumn.data_type}
-                onChange={handleInput}
-                name="data_type"
-                id="data_type"
-                className="h-10 text-xl px-2 py-4 border-black border-2 rounded-md"
-              />
-            </div>
-          </div>
-
-          <button
-            className="bg-orange-600 w-24 h-10 text-xl font-medium rounded-md"
-            type="submit"
+      <div>
+        <h1 className="text-3xl font-semibold">CREATE NEW COLUMN</h1>
+        <div className="border-black	border-2 rounded-md p-10">
+          <form
+            onSubmit={addingColumn}
+            className="flex justify-around items-center"
           >
-            Add
-          </button>
-        </form>
+            <div className="flex gap-20 items-center">
+              <div className="flex gap-2 items-center">
+                <label className="text-3xl font-medium">
+                  Enter The Column Name :{" "}
+                </label>
+                <input
+                  type="text"
+                  required
+                  autoComplete="off"
+                  placeholder="Enter The Column"
+                  value={addColumn.name}
+                  onChange={handleInput}
+                  name="name"
+                  id="name"
+                  className="h-10 text-xl px-2 py-4 border-black border-2 rounded-md"
+                />
+              </div>
+              <div className="flex gap-2 items-center">
+                <label className="text-3xl font-medium">
+                  Enter The Column's Data Type :{" "}
+                </label>
+                <input
+                  type="text"
+                  required
+                  autoComplete="off"
+                  placeholder="Enter The Column Data Type"
+                  value={addColumn.data_type}
+                  onChange={handleInput}
+                  name="data_type"
+                  id="data_type"
+                  className="h-10 text-xl px-2 py-4 border-black border-2 rounded-md"
+                />
+              </div>
+            </div>
+
+            <button
+              className="bg-orange-600 w-24 h-10 text-xl font-medium rounded-md"
+              type="submit"
+            >
+              Add
+            </button>
+          </form>
+        </div>
       </div>
+
       <div className=" flex flex-col justify-center items-center gap-4">
         <p className="text-xl font-medium">
-          Enter data in the Database according to the attributes (Eg: 1,Tom,20  with respect to ID,NAME,AGE) 
+          Enter data in the Database according to the attributes (Eg: 1,Tom,20
+          with respect to ID,NAME,AGE)
         </p>
         <div className="w-full flex justify-center gap-16">
           <input
@@ -516,7 +518,9 @@ delete_values_into_table("MyDatabase","ID",${deleting_data_id});  `,
                   {columnName}
                 </th>
               ))}
-              <th className="border px-4 py-2 text-xl">{isProcessLoad?"DELETE":"DATABASE"}</th>
+              <th className="border px-4 py-2 text-xl">
+                {isProcessLoad ? "DELETE" : "DATABASE"}
+              </th>
             </tr>
 
             {/* <th className="border px-4 py-2">Name</th>
@@ -542,7 +546,9 @@ delete_values_into_table("MyDatabase","ID",${deleting_data_id});  `,
                   </td>
                 ))}
                 <td className="border px-4 py-2 bg-orange-600 rounded-md text-center text-xl font-medium">
-                  <button onClick={()=>deletingData(curUser.ID)}>Delete</button>
+                  <button onClick={() => deletingData(curUser.ID)}>
+                    Delete
+                  </button>
                 </td>
               </tr>
             ))}
