@@ -15,6 +15,7 @@ export default function Home() {
   const [allColumn, setAllColumn] = useState([]); //  Array of the column name
   const [addDataInDatabase, setAddDataInDatabase] = useState(""); // Add Data in the Database (Input)
   const [allData, setAllData] = useState([]); //  Array of the database all data
+  const [updateColumn, setUpdateColumn] = useState({ column_name: "", new_column_data: "",id:0});
   const [isProcessCreationDone, setIsProcessCreationDone] = useState(false);
   const [isProcessLoad, setIsProcessLoad] = useState(false);
 
@@ -45,6 +46,20 @@ export default function Home() {
       toast.error("Unsuccessful Creation of Process ID ");
     }
   };
+
+  // To Be Continued ----------------------------------------------------------
+
+  // const customProcess=async(process_id)=>{
+  //   try {
+  //     setCurrentProcessID(process_id);
+  //     setAllProcessID([...allProcessID, currentProcessID]);
+  //     gettingDataInDatabase();
+  //     toast.success("Process Load Successfully ");
+  //   } catch (error) {
+  //     console.log(error);
+  //     toast.error("Process Load Unsuccessfully ");
+  //   }
+  // }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -297,6 +312,44 @@ delete_values_into_table("MyDatabase","ID",${deleting_data_id});  `,
     }
   };
 
+
+
+// Updating any data in the database ------------------------------------------------------
+
+  const updatingData=async(event)=>{
+    try {
+      event.preventDefault();
+      const messageId = await message({
+        process: currentProcessID,
+        signer: createDataItemSigner(window.arweaveWallet),
+        tags: [{ name: "Action", value: "Eval" }],
+        data: `
+  function update_values_into_table(table, attribute, attr,idNumber,id)
+
+    local result = db:exec(string.format([[
+        UPDATE "%s" SET "%s"="%s" WHERE "%s"="%s"
+    ]],table, string.upper(attribute), attr,idNumber,id))
+    if result ~= sqlite3.OK then
+        error("Failed to insert values: " .. db:errmsg())
+    end
+end 
+
+update_values_into_table("MyDatabase","${updateColumn.column_name}","${updateColumn.new_column_data}","ID",${updateColumn.id}); `,
+      });
+      console.log("updatingData idddddd " + messageId);
+      let res1 = await result({
+        message: messageId,
+        process: currentProcessID,
+      });
+      console.log("updatingData data " + JSON.stringify(res1));
+      await gettingDataInDatabase();
+      toast.success("Data Updated Successfully");
+    } catch (error) {
+      console.log(error);
+      toast.error("Data Not Updated");
+    }
+  }
+
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   // Getting the array in JS of the column name ----------------------------------------
@@ -368,6 +421,18 @@ delete_values_into_table("MyDatabase","ID",${deleting_data_id});  `,
     setAddColumn({ ...addColumn, [name]: value });
   };
 
+  const handleUpdateDataFunction=(process_id)=>{
+    // const [updateColumn, setUpdateColumn] = useState({ column_name: "", new_column_data: "",id:0});  
+    setUpdateColumn({ column_name: "", new_column_data: "",id:process_id});
+  }
+
+  const handleUpdateInput = (event) => {
+    const name = event.target.name;
+    const value = event.target.value;
+    console.log("updateColumn " + name, value);
+    setUpdateColumn({ ...updateColumn, [name]: value });
+  };
+
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   return (
@@ -395,6 +460,7 @@ delete_values_into_table("MyDatabase","ID",${deleting_data_id});  `,
             </button>
           </div>
         )}
+        {/* To Be Continued ----------------------------------------------------------
         OR
         <div className="flex gap-2 border-black	border-2 rounded-md p-4">
           <input
@@ -405,23 +471,12 @@ delete_values_into_table("MyDatabase","ID",${deleting_data_id});  `,
           />
           <button
             className="bg-orange-600 w-24 h-10 text-xl font-medium rounded-md"
-            onClick={() => setCurrentProcessID(userOwnProcessID)}
+            onClick={() => customProcess(userOwnProcessID)}
           >
             Load
           </button>
-          {/* <button className="bg-orange-600 w-24 h-10 text-xl font-medium rounded-md" onClick={setUpLsqlite3}>
-            Spwan
-          </button>
-          <button className="bg-orange-600 w-24 h-10 text-xl font-medium rounded-md" onClick={newDatabase}>
-            Database
-          </button>
-          <button
-            className="bg-orange-600 w-24 h-10 text-xl font-medium rounded-md"
-            onClick={gettingDataInDatabase}
-          >
-            data
-          </button> */}
-        </div>
+          
+        </div> */}
       </div>
       <div>
         <h1 className="text-3xl font-semibold">CREATE NEW COLUMN</h1>
@@ -499,8 +554,9 @@ delete_values_into_table("MyDatabase","ID",${deleting_data_id});  `,
           </button>
         </div>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-[100%] border border-gray-300 rounded-lg overflow-hidden">
+      <div className="w-full flex gap-16">
+      <div className="w-[65%] overflow-x-auto">
+        <table className="w-full border border-gray-300 rounded-lg overflow-hidden">
           <thead className="bg-gray-200">
             {/* <tr> */}
             {/* {isProcessCreationDone? <tr> {allColumn.map((val, key) => {
@@ -518,9 +574,12 @@ delete_values_into_table("MyDatabase","ID",${deleting_data_id});  `,
                   {columnName}
                 </th>
               ))}
-              <th className="border px-4 py-2 text-xl">
+              {/* <th className="border px-4 py-2 text-xl">
                 {isProcessLoad ? "DELETE" : "DATABASE"}
-              </th>
+              </th> */}
+              
+                {isProcessLoad ? <><th className="border px-4 py-2 text-xl">UPDATE</th><th className="border px-4 py-2 text-xl">DELETE</th></> : <th className="border px-4 py-2 text-xl">DATABASE</th>}
+              
             </tr>
 
             {/* <th className="border px-4 py-2">Name</th>
@@ -550,6 +609,11 @@ delete_values_into_table("MyDatabase","ID",${deleting_data_id});  `,
                     Delete
                   </button>
                 </td>
+                <td className="border px-4 py-2 bg-orange-600 rounded-md text-center text-xl font-medium">
+                  <button onClick={() => handleUpdateDataFunction(curUser.ID)}>
+                    UPDATE
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -574,6 +638,51 @@ delete_values_into_table("MyDatabase","ID",${deleting_data_id});  `,
       ///////////////////////////////////////////// */}
         </table>
       </div>
+      <div className="w-[30%] flex flex-col gap-8 px-16 py-6 bg-orange-500">
+          <h1 className="text-7xl font-bold underline underline-offset-4">
+            UPDATE <br/> (ID - {updateColumn.id})
+          </h1>
+          <form onSubmit={updatingData} className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2 text-xl">
+              <label htmlFor="name">Enter The Column Name (Which You Wanna Update) </label>
+              <input
+                type="text"
+                required
+                autoComplete="off"
+                value={updateColumn.column_name}
+                onChange={handleUpdateInput}
+                name="column_name"
+                id="column_name"
+                placeholder="Enter The Column Name"
+                className="h-10 text-xl px-2 py-4 border-black border-2 rounded-md"
+              ></input>
+            </div>
+
+            <div className="flex flex-col gap-2 text-xl">
+              <label htmlFor="name">Enter The Update Data </label>
+              <input
+                type="text"
+                required
+                autoComplete="off"
+                value={updateColumn.new_column_data}
+                onChange={handleUpdateInput}
+                name="new_column_data"
+                id="new_column_data"
+                placeholder="Enter The Password"
+                className="h-10 text-xl px-2 py-4 border-black border-2 rounded-md"
+              ></input>
+            </div>
+            
+            <button
+              type="submit"
+              className="bg-orange-600 w-40 h-10 text-xl font-medium rounded-md mt-4"
+            >
+              UPDATE
+            </button>
+          </form>
+        </div>
+      </div>
+      
     </div>
   );
 }
