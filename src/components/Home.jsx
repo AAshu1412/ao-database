@@ -14,6 +14,7 @@ export default function Home() {
   const [allColumn, setAllColumn] = useState([]); //  Array of the column name
   const [addDataInDatabase, setAddDataInDatabase] = useState(""); // Add Data in the Database (Input)
   const [allData, setAllData] = useState([]); //  Array of the database all data
+  const [isProcessCreationDone, setIsProcessCreationDone] = useState(false);
   const [isProcessLoad, setIsProcessLoad] = useState(false);
 
   const stripAnsiCodes = (str) =>
@@ -35,7 +36,7 @@ export default function Home() {
     console.log(processId);
     setAllProcessID([...allProcessID, processId]);
     setCurrentProcessID(processId);
-    setIsProcessLoad(true);
+    setIsProcessCreationDone(true);
   };
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -109,6 +110,7 @@ InitDb()
     });
     console.log("load data " + JSON.stringify(res1));
     showingAllColumns();
+    setIsProcessLoad(true);
   };
 
   // Setting new column as per the requirement of the user --------------------------------------------------------
@@ -234,6 +236,36 @@ return attr_info`,
     setAllData(resultArray);
   };
 
+// Deleting data from the database -------------------------------------
+
+    const deletingData = async (deleting_data_id) => {
+      const messageId = await message({
+        process: currentProcessID,
+        signer: createDataItemSigner(window.arweaveWallet),
+        tags: [{ name: "Action", value: "Eval" }],
+        data: `
+  function delete_values_into_table(table,idNumber,id)
+
+    local result = db:exec(string.format([[
+        DELETE FROM "%s" WHERE "%s"="%s"
+    ]],table,idNumber,id))
+    if result ~= sqlite3.OK then
+        error("Failed to insert values: " .. db:errmsg())
+    end
+end 
+
+delete_values_into_table("MyDatabase","ID",${deleting_data_id});  `,
+      });
+      console.log("deletingData idddddd " + messageId);
+      let res1 = await result({
+        message: messageId,
+        process: currentProcessID,
+      });
+      console.log(
+        "deletingData data " + JSON.stringify(res1)
+      );
+    };
+
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   // Getting the array in JS of the column name ----------------------------------------
@@ -310,7 +342,7 @@ return attr_info`,
   return (
     <div className="flex flex-col mt-10 mx-4 gap-8">
       <div className="flex gap-4 items-center">
-        {isProcessLoad ? (
+        {isProcessCreationDone ? (
           <div className="flex gap-2 border-black	border-2 rounded-md p-4">
             <h1 className="flex items-center justify-center bg-orange-600 w-[550px] h-10 text-xl font-medium rounded-md">
               {currentProcessID}
@@ -410,7 +442,7 @@ return attr_info`,
       </div>
       <div className=" flex flex-col justify-center items-center gap-4">
         <p className="text-xl font-medium">
-          Enter data in the Database according to the attributes (Eg: 1,Tom,20)
+          Enter data in the Database according to the attributes (Eg: 1,Tom,20  with respect to ID,NAME,AGE) 
         </p>
         <div className="w-full flex justify-center gap-16">
           <input
@@ -435,7 +467,7 @@ return attr_info`,
         <table className="w-[100%] border border-gray-300 rounded-lg overflow-hidden">
           <thead className="bg-gray-200">
             {/* <tr> */}
-            {/* {isProcessLoad? <tr> {allColumn.map((val, key) => {
+            {/* {isProcessCreationDone? <tr> {allColumn.map((val, key) => {
                 return (
                   <th key={key} className="border px-4 py-2">
                     {val}
@@ -446,11 +478,11 @@ return attr_info`,
               <th className="border px-4 py-2">DELETE</th></tr>:<tr></tr>} */}
             <tr>
               {allColumn.map((columnName, index) => (
-                <th key={index} className="border px-4 py-2">
+                <th key={index} className="border px-4 py-2 text-xl">
                   {columnName}
                 </th>
               ))}
-              <th className="border px-4 py-2">Actions</th>
+              <th className="border px-4 py-2 text-xl">{isProcessLoad?"DELETE":"DATABASE"}</th>
             </tr>
 
             {/* <th className="border px-4 py-2">Name</th>
@@ -470,13 +502,13 @@ return attr_info`,
                 {allColumn.map((columnName, columnIndex) => (
                   <td
                     key={columnIndex}
-                    className="border px-4 py-2 whitespace-nowrap"
+                    className="border px-4 py-2 whitespace-nowrap text-xl"
                   >
                     {curUser[columnName]}
                   </td>
                 ))}
-                <td className="border px-4 py-2">
-                  <button>Delete</button>
+                <td className="border px-4 py-2 bg-orange-600 rounded-md text-center text-xl font-medium">
+                  <button onClick={()=>deletingData(curUser.ID)}>Delete</button>
                 </td>
               </tr>
             ))}
