@@ -12,6 +12,8 @@ export default function Home() {
   const [allProcessID, setAllProcessID] = useState([]); // Getting the list of the process ID
   const [userOwnProcessID, setUserOwnProcessID] = useState(""); // Getting Process ID from the User (Input)
   const [currentProcessID, setCurrentProcessID] = useState(""); // Current Process that is in use
+  const [getDatabaseName, setGetDatabaseName] = useState("");  // Getting database name from the user 
+  const [databaseName, setDatabaseName] = useState("");  // Setting name of the database (Input)
   const [addColumn, setAddColumn] = useState({ name: "", data_type: "" }); // Column name and data type (Input)
   const [allColumn, setAllColumn] = useState([]); //  Array of the column name
   const [addDataInDatabase, setAddDataInDatabase] = useState(""); // Add Data in the Database (Input)
@@ -23,6 +25,7 @@ export default function Home() {
   });
   const [isProcessCreationDone, setIsProcessCreationDone] = useState(false);
   const [isProcessLoad, setIsProcessLoad] = useState(false);
+  const [changeFromCustomToUserInput, setchangeFromCustomToUserInput] = useState(false);
 
   const stripAnsiCodes = (str) =>
     str.replace(
@@ -54,17 +57,19 @@ export default function Home() {
 
   // To Be Continued ----------------------------------------------------------
 
-  // const customProcess=async(process_id)=>{
-  //   try {
-  //     setCurrentProcessID(process_id);
-  //     setAllProcessID([...allProcessID, currentProcessID]);
-  //     gettingDataInDatabase();
-  //     toast.success("Process Load Successfully ");
-  //   } catch (error) {
-  //     console.log(error);
-  //     toast.error("Process Load Unsuccessfully ");
-  //   }
-  // }
+  const customProcess=async(process_id)=>{
+    try {
+      setCurrentProcessID(process_id);
+      setAllProcessID([...allProcessID, currentProcessID]);
+      setIsProcessCreationDone(true);
+      setchangeFromCustomToUserInput(true);
+      // gettingDataInDatabase(databaseName);
+      toast.success("Process Load Successfully ");
+    } catch (error) {
+      console.log(error);
+      toast.error("Process Load Unsuccessfully ");
+    }
+  }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -72,14 +77,14 @@ export default function Home() {
 
   // Getting the all the columns name ----------------------------------------------------
 
-  const showingAllColumns = async () => {
+  const showingAllColumns = async (database) => {
     const messageId = await message({
       process: currentProcessID,
       signer: createDataItemSigner(window.arweaveWallet),
       tags: [{ name: "Action", value: "Eval" }],
       data: `
 schema_info = {}
-for row in db:nrows("PRAGMA table_info(MyDatabase);") do
+for row in db:nrows("PRAGMA table_info(${database});") do
       table.insert(schema_info, {name = row.name, type = row.type})
 end
 all_attribute={}
@@ -95,22 +100,38 @@ return all_attribute`,
       message: messageId,
       process: currentProcessID,
     });
-    console.log(
-      "showingAllColumns Data " + stripAnsiCodes(res1.Output.data.output)
-    );
-    console.log(
-      "showingAllColumns type " + typeof stripAnsiCodes(res1.Output.data.output)
-    );
-
-    const _data = stripAnsiCodes(res1.Output.data.output);
-    const valuesArray = extractValues(_data);
+    console.log( "showingAllColumns " + JSON.stringify(res1));
+    if(res1.Output.data.output==undefined){
+      console.log( "showingAllColumns res.data : " + JSON.stringify(res1.Output.data));
+      console.log(
+        "showingAllColumns res.data ----- " + stripAnsiCodes(res1.Output.data)
+      );
+      const _data = stripAnsiCodes(res1.Output.data);
+      const valuesArray = extractValues(_data);
     setAllColumn(valuesArray);
+    }
+    else{
+      console.log(
+        "showingAllColumns Data " + stripAnsiCodes(res1.Output.data.output)
+      );
+      console.log(
+        "showingAllColumns type " + typeof stripAnsiCodes(res1.Output.data.output)
+      );
+  
+      const _data = stripAnsiCodes(res1.Output.data.output);
+      const valuesArray = extractValues(_data);
+    setAllColumn(valuesArray);
+    }
+    
   };
 
   //  Load The New Database with column ID as a default -------------------------------------------------
 
   const load = async () => {
     try {
+      const dbName = getDatabaseName;
+      setDatabaseName(getDatabaseName);
+      console.log("database name : "+dbName);
       const messageId = await message({
         process: currentProcessID,
         signer: createDataItemSigner(window.arweaveWallet),
@@ -118,7 +139,7 @@ return all_attribute`,
         data: `sqlite3 = require('lsqlite3')
       db = db or sqlite3.open_memory()
       MYDATABASE = [[
-  CREATE TABLE IF NOT EXISTS MyDatabase (
+  CREATE TABLE IF NOT EXISTS ${dbName} (
     ID INTEGER PRIMARY KEY AUTOINCREMENT
   );
   ]]
@@ -137,7 +158,7 @@ return all_attribute`,
         process: currentProcessID,
       });
       console.log("load data " + JSON.stringify(res1));
-      await showingAllColumns();
+      await showingAllColumns(dbName);
       toast.success("Process Load Successfully");
       setIsProcessLoad(true);
     } catch (error) {
@@ -149,6 +170,7 @@ return all_attribute`,
   // Setting new column as per the requirement of the user --------------------------------------------------------
 
   const addingColumn = async (event) => {
+    console.log("adding column database name : "+databaseName);
     try {
       event.preventDefault();
       const messageId = await message({
@@ -162,7 +184,7 @@ return all_attribute`,
      db:exec(add_column)
 end
 
-add_column("MyDatabase", "${addColumn.name}","${addColumn.data_type}") `,
+add_column("${databaseName}", "${addColumn.name}","${addColumn.data_type}") `,
       });
       console.log("addingColumn idddddd " + messageId);
       let res1 = await result({
@@ -170,7 +192,7 @@ add_column("MyDatabase", "${addColumn.name}","${addColumn.data_type}") `,
         process: currentProcessID,
       });
       console.log("addingColumn data " + JSON.stringify(res1));
-      await showingAllColumns();
+      await showingAllColumns(databaseName);
       toast.success("Column is Created Successfully");
     } catch (error) {
       console.log(error);
@@ -213,7 +235,7 @@ add_column("MyDatabase", "${addColumn.name}","${addColumn.data_type}") `,
 end
 
 local values = ${values}
-insert_values_into_table("MyDatabase", values) `,
+insert_values_into_table("${databaseName}", values) `,
       });
       console.log("addingDataInDatabase idddddd " + messageId);
       let res1 = await result({
@@ -221,7 +243,7 @@ insert_values_into_table("MyDatabase", values) `,
         process: currentProcessID,
       });
       console.log("addingDataInDatabase data " + JSON.stringify(res1));
-      await gettingDataInDatabase();
+      await gettingDataInDatabase(databaseName);
       toast.success("Data is Successfully Filled");
     } catch (error) {
       console.log(error);
@@ -231,7 +253,7 @@ insert_values_into_table("MyDatabase", values) `,
 
   // Getting the data in the database for the display -------------------------------------
 
-  const gettingDataInDatabase = async () => {
+  const gettingDataInDatabase = async (database) => {
     const messageId = await message({
       process: currentProcessID,
       signer: createDataItemSigner(window.arweaveWallet),
@@ -259,7 +281,7 @@ local function fetch_all_data(table_name)
 
 end
 
-fetch_all_data("MyDatabase")
+fetch_all_data("${database}")
 
 
 return attr_info`,
@@ -301,7 +323,7 @@ return attr_info`,
     end
 end 
 
-delete_values_into_table("MyDatabase","ID",${deleting_data_id});  `,
+delete_values_into_table("${databaseName}","ID",${deleting_data_id});  `,
       });
       console.log("deletingData idddddd " + messageId);
       let res1 = await result({
@@ -309,7 +331,7 @@ delete_values_into_table("MyDatabase","ID",${deleting_data_id});  `,
         process: currentProcessID,
       });
       console.log("deletingData data " + JSON.stringify(res1));
-      await gettingDataInDatabase();
+      await gettingDataInDatabase(databaseName);
       toast.success("Data Deleted Successfully");
     } catch (error) {
       console.log(error);
@@ -337,7 +359,7 @@ delete_values_into_table("MyDatabase","ID",${deleting_data_id});  `,
     end
 end 
 
-update_values_into_table("MyDatabase","${updateColumn.column_name}","${updateColumn.new_column_data}","ID",${updateColumn.id}); `,
+update_values_into_table("${databaseName}","${updateColumn.column_name}","${updateColumn.new_column_data}","ID",${updateColumn.id}); `,
       });
       console.log("updatingData idddddd " + messageId);
       let res1 = await result({
@@ -345,7 +367,7 @@ update_values_into_table("MyDatabase","${updateColumn.column_name}","${updateCol
         process: currentProcessID,
       });
       console.log("updatingData data " + JSON.stringify(res1));
-      await gettingDataInDatabase();
+      await gettingDataInDatabase(databaseName);
       toast.success("Data Updated Successfully");
     } catch (error) {
       console.log(error);
@@ -436,44 +458,122 @@ update_values_into_table("MyDatabase","${updateColumn.column_name}","${updateCol
     setUpdateColumn({ ...updateColumn, [name]: value });
   };
 
+  const settingUpDatabaseName= async()=>{
+    let data=getDatabaseName;
+     setDatabaseName(getDatabaseName);
+     await showingAllColumns(data);
+     setIsProcessLoad(true);
+      await gettingDataInDatabase(data);
+      toast.success("Process Load Successfully");
+      console.log("-mkm-");
+  }
+
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   return (
     <div className="flex flex-col mt-10 mx-4 gap-8">
       <div className="flex gap-4 items-center">
-        {isProcessCreationDone ? (
-          <div className="flex gap-2 border-black	border-2 rounded-md p-4">
+        {isProcessCreationDone ? ( 
+               <div className="flex gap-20 border-black	border-2 rounded-md p-4 justify-center">
             <h1 className="flex items-center justify-center bg-orange-600 w-[550px] h-10 text-xl font-medium rounded-md">
               {currentProcessID}
             </h1>
+            <div className="flex gap-6">
+            <h1 className="text-3xl font-medium">
+                  Enter The Database Name :{" "}
+                </h1>
+            <input  
+            autoComplete="off"
+            type="text"
+            placeholder="Enter Name of The Database"
+            value={getDatabaseName}
+            onChange={(event) => setGetDatabaseName(event.target.value)}
+            name="data_type"
+            id="data_type"
+            className="w-96 h-10 text-xl px-2 py-4 border-black border-2 rounded-md"
+          />
+              </div>
+            
             <Ripples
               color="black"
               during={1200}
               placeholder={"Random Anything"}
             >
-              <button
+              {changeFromCustomToUserInput?( <button
+                className="bg-orange-600 w-24 h-10 text-xl font-medium rounded-md"
+                onClick={settingUpDatabaseName}
+              >
+                Custom
+              </button>):(  <button
                 className="bg-orange-600 w-24 h-10 text-xl font-medium rounded-md"
                 onClick={load}
               >
                 Load
-              </button>
+              </button>)}
+            
             </Ripples>
           </div>
-        ) : (
-          <div className="border-black	border-2 rounded-md p-4">
-            <Ripples
-              color="black"
-              during={1200}
-              placeholder={"Random Anything"}
+   
+          //  <div className="flex gap-2 border-black	border-2 rounded-md p-4">
+          // <h1 className="text-3xl font-medium">
+          //         Enter The Database Name :{" "}
+          //       </h1>
+          // <input  
+          //   type="text"
+          //   placeholder="Enter Name of The Database"
+          //   value={getDatabaseName}
+          //   onChange={(event) => setGetDatabaseName(event.target.value)}
+          //   name="data_type"
+          //   id="data_type"
+          //   className="w-96 h-10 text-xl px-2 py-4 border-black border-2 rounded-md"
+          // />
+          //   <Ripples
+          //     color="black"
+          //     during={1200}
+          //     placeholder={"Random Anything"}
+          //   >
+          //     <button
+          //       className="bg-orange-600 w-24 h-10 text-xl font-medium rounded-md"
+          //       onClick={settingUpDatabaseName}
+          //     >
+          //       Set
+          //     </button>
+          //   </Ripples>
+          // </div> 
+           
+       
+        ) : (<div className="flex gap-10"> <div className="border-black	border-2 rounded-md p-4">
+          <Ripples
+            color="black"
+            during={1200}
+            placeholder={"Random Anything"}
+          >
+            <button
+              onClick={check}
+              className="bg-orange-600 w-64 h-10 text-xl font-medium rounded-md "
             >
-              <button
-                onClick={check}
-                className="bg-orange-600 w-64 h-10 text-xl font-medium rounded-md "
-              >
-                + Create New Process
-              </button>
-            </Ripples>
-          </div>
+              + Create New Process
+            </button>
+          </Ripples>
+        </div>
+        <div className="flex gap-2 border-black	border-2 rounded-md p-4">
+          <input
+            type="text"
+            onChange={(event) => setUserOwnProcessID(event.target.value)}
+            placeholder="Enter The Process ID"
+            className="h-10 text-xl px-2 py-4 border-black border-2 rounded-md"
+          />
+          <button
+            className="bg-orange-600 w-24 h-10 text-xl font-medium rounded-md"
+            onClick={() => customProcess(userOwnProcessID)}
+          >
+            Load
+          </button>
+          
+        </div>
+        </div>
+      
+         
         )}
         {/* To Be Continued ----------------------------------------------------------
         OR
@@ -573,6 +673,9 @@ update_values_into_table("MyDatabase","${updateColumn.column_name}","${updateCol
               Add
             </button>
           </Ripples>
+        </div>
+        <div>
+        <h1 className="text-6xl font-bold underline underline-offset-4">{databaseName}</h1>
         </div>
       </div>
       <div className="w-full flex gap-16">
