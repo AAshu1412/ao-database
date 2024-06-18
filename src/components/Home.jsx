@@ -478,6 +478,7 @@ update_values_into_table("${databaseName}","${updateColumn.column_name}","${upda
     <div className="flex flex-col mt-10 mx-4 gap-8">
       <div className="flex gap-4 items-center">
         {isProcessCreationDone ? (
+          <div className="flex gap-8 items-center">
           <div className="flex gap-20 border-black	border-2 rounded-md p-4 justify-center">
             <h1 className="flex items-center justify-center bg-orange-600 w-[550px] h-10 text-xl font-medium rounded-md">
               {currentProcessID}
@@ -508,7 +509,7 @@ update_values_into_table("${databaseName}","${updateColumn.column_name}","${upda
                   className="bg-orange-600 w-24 h-10 text-xl font-medium rounded-md"
                   onClick={settingUpDatabaseName}
                 >
-                  Custom
+                  Load
                 </button>
               ) : (
                 <button
@@ -519,7 +520,27 @@ update_values_into_table("${databaseName}","${updateColumn.column_name}","${upda
                 </button>
               )}
             </Ripples>
-          </div>
+          </div> <Ripples
+              color="black"
+              during={1200}
+              placeholder={"Random Anything"}
+            >
+              {changeFromCustomToUserInput ? (
+                <button
+                  className="bg-orange-600 w-24 h-16 text-xl font-medium rounded-md"
+                  onClick={settingUpDatabaseName}
+                >
+                  REFRESH
+                </button>
+              ) : (
+                <button
+                  className="bg-orange-600 w-24 h-10 text-xl font-medium rounded-md"
+                  onClick={load}
+                >
+                  REFRESH
+                </button>
+              )}
+            </Ripples> </div>
         ) : (
           //  <div className="flex gap-2 border-black	border-2 rounded-md p-4">
           // <h1 className="text-3xl font-medium">
