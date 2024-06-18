@@ -12,8 +12,8 @@ export default function Home() {
   const [allProcessID, setAllProcessID] = useState([]); // Getting the list of the process ID
   const [userOwnProcessID, setUserOwnProcessID] = useState(""); // Getting Process ID from the User (Input)
   const [currentProcessID, setCurrentProcessID] = useState(""); // Current Process that is in use
-  const [getDatabaseName, setGetDatabaseName] = useState("");  // Getting database name from the user 
-  const [databaseName, setDatabaseName] = useState("");  // Setting name of the database (Input)
+  const [getDatabaseName, setGetDatabaseName] = useState(""); // Getting database name from the user
+  const [databaseName, setDatabaseName] = useState(""); // Setting name of the database (Input)
   const [addColumn, setAddColumn] = useState({ name: "", data_type: "" }); // Column name and data type (Input)
   const [allColumn, setAllColumn] = useState([]); //  Array of the column name
   const [addDataInDatabase, setAddDataInDatabase] = useState(""); // Add Data in the Database (Input)
@@ -25,7 +25,8 @@ export default function Home() {
   });
   const [isProcessCreationDone, setIsProcessCreationDone] = useState(false);
   const [isProcessLoad, setIsProcessLoad] = useState(false);
-  const [changeFromCustomToUserInput, setchangeFromCustomToUserInput] = useState(false);
+  const [changeFromCustomToUserInput, setchangeFromCustomToUserInput] =
+    useState(false);
 
   const stripAnsiCodes = (str) =>
     str.replace(
@@ -57,7 +58,7 @@ export default function Home() {
 
   // To Be Continued ----------------------------------------------------------
 
-  const customProcess=async(process_id)=>{
+  const customProcess = async (process_id) => {
     try {
       setCurrentProcessID(process_id);
       setAllProcessID([...allProcessID, currentProcessID]);
@@ -69,7 +70,7 @@ export default function Home() {
       console.log(error);
       toast.error("Process Load Unsuccessfully ");
     }
-  }
+  };
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -100,29 +101,30 @@ return all_attribute`,
       message: messageId,
       process: currentProcessID,
     });
-    console.log( "showingAllColumns " + JSON.stringify(res1));
-    if(res1.Output.data.output==undefined){
-      console.log( "showingAllColumns res.data : " + JSON.stringify(res1.Output.data));
+    console.log("showingAllColumns " + JSON.stringify(res1));
+    if (res1.Output.data.output == undefined) {
+      console.log(
+        "showingAllColumns res.data : " + JSON.stringify(res1.Output.data)
+      );
       console.log(
         "showingAllColumns res.data ----- " + stripAnsiCodes(res1.Output.data)
       );
       const _data = stripAnsiCodes(res1.Output.data);
       const valuesArray = extractValues(_data);
-    setAllColumn(valuesArray);
-    }
-    else{
+      setAllColumn(valuesArray);
+    } else {
       console.log(
         "showingAllColumns Data " + stripAnsiCodes(res1.Output.data.output)
       );
       console.log(
-        "showingAllColumns type " + typeof stripAnsiCodes(res1.Output.data.output)
+        "showingAllColumns type " +
+          typeof stripAnsiCodes(res1.Output.data.output)
       );
-  
+
       const _data = stripAnsiCodes(res1.Output.data.output);
       const valuesArray = extractValues(_data);
-    setAllColumn(valuesArray);
+      setAllColumn(valuesArray);
     }
-    
   };
 
   //  Load The New Database with column ID as a default -------------------------------------------------
@@ -131,7 +133,7 @@ return all_attribute`,
     try {
       const dbName = getDatabaseName;
       setDatabaseName(getDatabaseName);
-      console.log("database name : "+dbName);
+      console.log("database name : " + dbName);
       const messageId = await message({
         process: currentProcessID,
         signer: createDataItemSigner(window.arweaveWallet),
@@ -170,7 +172,7 @@ return all_attribute`,
   // Setting new column as per the requirement of the user --------------------------------------------------------
 
   const addingColumn = async (event) => {
-    console.log("adding column database name : "+databaseName);
+    console.log("adding column database name : " + databaseName);
     try {
       event.preventDefault();
       const messageId = await message({
@@ -291,7 +293,7 @@ return attr_info`,
       message: messageId,
       process: currentProcessID,
     });
-    // console.log("gettingDataInDatabase data " +  stripAnsiCodes(res1.Output.data.output));
+    console.log("gettingDataInDatabase data " + JSON.stringify(res1));
     console.log(
       "gettingDataInDatabase data " + stripAnsiCodes(res1.Output.data.output)
     );
@@ -448,6 +450,7 @@ update_values_into_table("${databaseName}","${updateColumn.column_name}","${upda
 
   const handleUpdateDataFunction = (process_id) => {
     // const [updateColumn, setUpdateColumn] = useState({ column_name: "", new_column_data: "",id:0});
+    // console.log(process_id);
     setUpdateColumn({ column_name: "", new_column_data: "", id: process_id });
   };
 
@@ -458,67 +461,71 @@ update_values_into_table("${databaseName}","${updateColumn.column_name}","${upda
     setUpdateColumn({ ...updateColumn, [name]: value });
   };
 
-  const settingUpDatabaseName= async()=>{
-    let data=getDatabaseName;
-     setDatabaseName(getDatabaseName);
-     await showingAllColumns(data);
-     setIsProcessLoad(true);
-      await gettingDataInDatabase(data);
-      toast.success("Process Load Successfully");
-      console.log("-mkm-");
-  }
+  const settingUpDatabaseName = async () => {
+    let data = getDatabaseName;
+    setDatabaseName(getDatabaseName);
+    await showingAllColumns(data);
+    setIsProcessLoad(true);
+    await gettingDataInDatabase(data);
+    toast.success("Process Load Successfully");
+    console.log("-mkm-");
+  };
+  console.log(allData);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   return (
     <div className="flex flex-col mt-10 mx-4 gap-8">
       <div className="flex gap-4 items-center">
-        {isProcessCreationDone ? ( 
-               <div className="flex gap-20 border-black	border-2 rounded-md p-4 justify-center">
+        {isProcessCreationDone ? (
+          <div className="flex gap-20 border-black	border-2 rounded-md p-4 justify-center">
             <h1 className="flex items-center justify-center bg-orange-600 w-[550px] h-10 text-xl font-medium rounded-md">
               {currentProcessID}
             </h1>
             <div className="flex gap-6">
-            <h1 className="text-3xl font-medium">
-                  Enter The Database Name :{" "}
-                </h1>
-            <input  
-            autoComplete="off"
-            type="text"
-            placeholder="Enter Name of The Database"
-            value={getDatabaseName}
-            onChange={(event) => setGetDatabaseName(event.target.value)}
-            name="data_type"
-            id="data_type"
-            className="w-96 h-10 text-xl px-2 py-4 border-black border-2 rounded-md"
-          />
-              </div>
-            
+              <h1 className="text-3xl font-medium">
+                Enter The Database Name :{" "}
+              </h1>
+              <input
+                autoComplete="off"
+                type="text"
+                placeholder="Enter Name of The Database"
+                value={getDatabaseName}
+                onChange={(event) => setGetDatabaseName(event.target.value)}
+                name="data_type"
+                id="data_type"
+                className="w-96 h-10 text-xl px-2 py-4 border-black border-2 rounded-md"
+              />
+            </div>
+
             <Ripples
               color="black"
               during={1200}
               placeholder={"Random Anything"}
             >
-              {changeFromCustomToUserInput?( <button
-                className="bg-orange-600 w-24 h-10 text-xl font-medium rounded-md"
-                onClick={settingUpDatabaseName}
-              >
-                Custom
-              </button>):(  <button
-                className="bg-orange-600 w-24 h-10 text-xl font-medium rounded-md"
-                onClick={load}
-              >
-                Load
-              </button>)}
-            
+              {changeFromCustomToUserInput ? (
+                <button
+                  className="bg-orange-600 w-24 h-10 text-xl font-medium rounded-md"
+                  onClick={settingUpDatabaseName}
+                >
+                  Custom
+                </button>
+              ) : (
+                <button
+                  className="bg-orange-600 w-24 h-10 text-xl font-medium rounded-md"
+                  onClick={load}
+                >
+                  Load
+                </button>
+              )}
             </Ripples>
           </div>
-   
+        ) : (
           //  <div className="flex gap-2 border-black	border-2 rounded-md p-4">
           // <h1 className="text-3xl font-medium">
           //         Enter The Database Name :{" "}
           //       </h1>
-          // <input  
+          // <input
           //   type="text"
           //   placeholder="Enter Name of The Database"
           //   value={getDatabaseName}
@@ -539,41 +546,39 @@ update_values_into_table("${databaseName}","${updateColumn.column_name}","${upda
           //       Set
           //     </button>
           //   </Ripples>
-          // </div> 
-           
-       
-        ) : (<div className="flex gap-10"> <div className="border-black	border-2 rounded-md p-4">
-          <Ripples
-            color="black"
-            during={1200}
-            placeholder={"Random Anything"}
-          >
-            <button
-              onClick={check}
-              className="bg-orange-600 w-64 h-10 text-xl font-medium rounded-md "
-            >
-              + Create New Process
-            </button>
-          </Ripples>
-        </div>
-        <div className="flex gap-2 border-black	border-2 rounded-md p-4">
-          <input
-            type="text"
-            onChange={(event) => setUserOwnProcessID(event.target.value)}
-            placeholder="Enter The Process ID"
-            className="h-10 text-xl px-2 py-4 border-black border-2 rounded-md"
-          />
-          <button
-            className="bg-orange-600 w-24 h-10 text-xl font-medium rounded-md"
-            onClick={() => customProcess(userOwnProcessID)}
-          >
-            Load
-          </button>
-          
-        </div>
-        </div>
-      
-         
+          // </div>
+
+          <div className="flex gap-10">
+            {" "}
+            <div className="border-black	border-2 rounded-md p-4">
+              <Ripples
+                color="black"
+                during={1200}
+                placeholder={"Random Anything"}
+              >
+                <button
+                  onClick={check}
+                  className="bg-orange-600 w-64 h-10 text-xl font-medium rounded-md "
+                >
+                  + Create New Process
+                </button>
+              </Ripples>
+            </div>
+            <div className="flex gap-2 border-black	border-2 rounded-md p-4">
+              <input
+                type="text"
+                onChange={(event) => setUserOwnProcessID(event.target.value)}
+                placeholder="Enter The Process ID"
+                className="h-10 text-xl px-2 py-4 border-black border-2 rounded-md"
+              />
+              <button
+                className="bg-orange-600 w-24 h-10 text-xl font-medium rounded-md"
+                onClick={() => customProcess(userOwnProcessID)}
+              >
+                Load
+              </button>
+            </div>
+          </div>
         )}
         {/* To Be Continued ----------------------------------------------------------
         OR
@@ -675,7 +680,9 @@ update_values_into_table("${databaseName}","${updateColumn.column_name}","${upda
           </Ripples>
         </div>
         <div>
-        <h1 className="text-6xl font-bold underline underline-offset-4">{databaseName}</h1>
+          <h1 className="text-6xl font-bold underline underline-offset-4">
+            {databaseName}
+          </h1>
         </div>
       </div>
       <div className="w-full flex gap-16">
@@ -719,48 +726,60 @@ update_values_into_table("${databaseName}","${updateColumn.column_name}","${upda
               {/*  </tr> */}
             </thead>
             <tbody>
-              {allData.map((curUser, index) => (
-                <tr
-                  key={index}
-                  className={
-                    index % 2 === 0 ? "even:bg-gray-100" : "odd:bg-white"
-                  }
-                >
-                  {allColumn.map((columnName, columnIndex) => (
-                    <td
-                      key={columnIndex}
-                      className="border px-4 py-2 whitespace-nowrap text-xl"
-                    >
-                      {curUser[columnName]}
-                    </td>
-                  ))}
-                  <td className="border px-4 py-2 bg-orange-600 rounded-md text-center text-xl font-medium">
-                    <Ripples
-                      color="black"
-                      during={1200}
-                      placeholder={"Random Anything"}
-                    >
-                      <button onClick={() => deletingData(curUser.ID)}>
-                        Delete
-                      </button>
-                    </Ripples>
-                  </td>
-                  <td className="border px-4 py-2 bg-orange-600 rounded-md text-center text-xl font-medium">
-                    <Ripples
-                      color="black"
-                      during={1200}
-                      placeholder={"Random Anything"}
-                    >
-                      <button
-                        onClick={() => handleUpdateDataFunction(curUser.ID)}
-                        className="w-auto"
+              {allData.map((curUser, index) => {
+                const idPropertyName = Object.keys(curUser).find(
+                  (key) => key.toLowerCase() === "id"
+                );
+                console.log("idPropertyName : " + idPropertyName);
+                // console.log("columnName : "+columnName);
+
+                return (
+                  <tr
+                    key={index}
+                    className={
+                      index % 2 === 0 ? "even:bg-gray-100" : "odd:bg-white"
+                    }
+                  >
+                    {allColumn.map((columnName, columnIndex) => {
+                      return (
+                        <td
+                          key={columnIndex}
+                          className="border px-4 py-2 whitespace-nowrap text-xl"
+                        >
+                          {curUser[columnName]}
+                        </td>
+                      );
+                    })}
+                    <td className="border px-4 py-2 bg-orange-600 rounded-md text-center text-xl font-medium">
+                      <Ripples
+                        color="black"
+                        during={1200}
+                        placeholder={"Random Anything"}
                       >
-                        UPDATE
-                      </button>
-                    </Ripples>
-                  </td>
-                </tr>
-              ))}
+                        <button onClick={() => deletingData(curUser.ID)}>
+                          Delete
+                        </button>
+                      </Ripples>
+                    </td>
+                    <td className="border px-4 py-2 bg-orange-600 rounded-md text-center text-xl font-medium">
+                      <Ripples
+                        color="black"
+                        during={1200}
+                        placeholder={"Random Anything"}
+                      >
+                        <button
+                          onClick={() =>
+                            handleUpdateDataFunction(curUser[idPropertyName])
+                          }
+                          className="w-auto"
+                        >
+                          UPDATE
+                        </button>
+                      </Ripples>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
 
             {/* ///////////////////////////////////////////////
