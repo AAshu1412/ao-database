@@ -35,7 +35,7 @@ AO DATABASE! Built upon the powerful AO and lsqlite3 technologies, this user-fri
     - AO Connect
     - Arweave-wallet-kit
 
-## ✨ Features
+## Features
 
 - **User-Friendly GUI**: A simple and intuitive graphical user interface built using AO and LUA lsqlite3.
 - **Database Creation**: Easily create your own databases with customizable column names (attributes).
@@ -44,7 +44,10 @@ AO DATABASE! Built upon the powerful AO and lsqlite3 technologies, this user-fri
 - **Data Deletion**: Effortlessly delete unwanted data.
 - **Data Updating**: Quickly update existing data in your database.
 - **Dynamic Column Handling**: Add new columns to existing databases, with new column data defaulting to NULL for easy updates.
+- **Process ID Integration**: Use your existing process IDs to access and manage your databases. Simply input your process ID into the AO DATABASE platform to retrieve and manipulate your data.
+- **Data Operations on Existing Process IDs**: Perform all standard database functions—such as adding new columns, inserting data, and deleting or updating records—on both new and existing databases associated with your process IDs.
 - **Flexibility**: Manage and manipulate your database with ease, ensuring efficient data organization and retrieval.
+
 # How to setup
 ## Clone the repo
 

@@ -316,6 +316,8 @@ return attr_info`,
         tags: [{ name: "Action", value: "Eval" }],
         data: `
   function delete_values_into_table(table,idNumber,id)
+  sqlite3 = require('lsqlite3')
+      db = db or sqlite3.open_memory()
 
     local result = db:exec(string.format([[
         DELETE FROM "%s" WHERE "%s"="%s"
@@ -346,22 +348,32 @@ delete_values_into_table("${databaseName}","ID",${deleting_data_id});  `,
   const updatingData = async (event) => {
     try {
       event.preventDefault();
+      console.log("popopjmimknj : " + updateColumn.id);
+      console.log(
+        "updateColumn.new_column_data : " + updateColumn.new_column_data
+      );
+
+      console.log("updateColumn.column_name : " + updateColumn.column_name);
+
+      console.log("databaseName : " + databaseName);
+
       const messageId = await message({
         process: currentProcessID,
         signer: createDataItemSigner(window.arweaveWallet),
         tags: [{ name: "Action", value: "Eval" }],
         data: `
   function update_values_into_table(table, attribute, attr,idNumber,id)
-
+   sqlite3 = require('lsqlite3')
+      db = db or sqlite3.open_memory()
     local result = db:exec(string.format([[
         UPDATE "%s" SET "%s"="%s" WHERE "%s"="%s"
-    ]],table, string.upper(attribute), attr,idNumber,id))
+    ]],table, attribute, attr,idNumber,id))
     if result ~= sqlite3.OK then
         error("Failed to insert values: " .. db:errmsg())
     end
 end 
 
-update_values_into_table("${databaseName}","${updateColumn.column_name}","${updateColumn.new_column_data}","ID",${updateColumn.id}); `,
+update_values_into_table("${databaseName}","${updateColumn.column_name}","${updateColumn.new_column_data}","id",${updateColumn.id}); `,
       });
       console.log("updatingData idddddd " + messageId);
       let res1 = await result({
@@ -479,48 +491,49 @@ update_values_into_table("${databaseName}","${updateColumn.column_name}","${upda
       <div className="flex gap-4 items-center">
         {isProcessCreationDone ? (
           <div className="flex gap-8 items-center">
-          <div className="flex gap-20 border-black	border-2 rounded-md p-4 justify-center">
-            <h1 className="flex items-center justify-center bg-orange-600 w-[550px] h-10 text-xl font-medium rounded-md">
-              {currentProcessID}
-            </h1>
-            <div className="flex gap-6">
-              <h1 className="text-3xl font-medium">
-                Enter The Database Name :{" "}
+            <div className="flex gap-20 border-black	border-2 rounded-md p-4 justify-center">
+              <h1 className="flex items-center justify-center bg-orange-600 w-[550px] h-10 text-xl font-medium rounded-md">
+                {currentProcessID}
               </h1>
-              <input
-                autoComplete="off"
-                type="text"
-                placeholder="Enter Name of The Database"
-                value={getDatabaseName}
-                onChange={(event) => setGetDatabaseName(event.target.value)}
-                name="data_type"
-                id="data_type"
-                className="w-96 h-10 text-xl px-2 py-4 border-black border-2 rounded-md"
-              />
-            </div>
+              <div className="flex gap-6">
+                <h1 className="text-3xl font-medium">
+                  Enter The Database Name :{" "}
+                </h1>
+                <input
+                  autoComplete="off"
+                  type="text"
+                  placeholder="Enter Name of The Database"
+                  value={getDatabaseName}
+                  onChange={(event) => setGetDatabaseName(event.target.value)}
+                  name="data_type"
+                  id="data_type"
+                  className="w-96 h-10 text-xl px-2 py-4 border-black border-2 rounded-md"
+                />
+              </div>
 
+              <Ripples
+                color="black"
+                during={1200}
+                placeholder={"Random Anything"}
+              >
+                {changeFromCustomToUserInput ? (
+                  <button
+                    className="bg-orange-600 w-24 h-10 text-xl font-medium rounded-md"
+                    onClick={settingUpDatabaseName}
+                  >
+                    Load
+                  </button>
+                ) : (
+                  <button
+                    className="bg-orange-600 w-24 h-10 text-xl font-medium rounded-md"
+                    onClick={load}
+                  >
+                    Load
+                  </button>
+                )}
+              </Ripples>
+            </div>{" "}
             <Ripples
-              color="black"
-              during={1200}
-              placeholder={"Random Anything"}
-            >
-              {changeFromCustomToUserInput ? (
-                <button
-                  className="bg-orange-600 w-24 h-10 text-xl font-medium rounded-md"
-                  onClick={settingUpDatabaseName}
-                >
-                  Load
-                </button>
-              ) : (
-                <button
-                  className="bg-orange-600 w-24 h-10 text-xl font-medium rounded-md"
-                  onClick={load}
-                >
-                  Load
-                </button>
-              )}
-            </Ripples>
-          </div> <Ripples
               color="black"
               during={1200}
               placeholder={"Random Anything"}
@@ -540,7 +553,8 @@ update_values_into_table("${databaseName}","${updateColumn.column_name}","${upda
                   REFRESH
                 </button>
               )}
-            </Ripples> </div>
+            </Ripples>{" "}
+          </div>
         ) : (
           //  <div className="flex gap-2 border-black	border-2 rounded-md p-4">
           // <h1 className="text-3xl font-medium">
@@ -777,7 +791,9 @@ update_values_into_table("${databaseName}","${updateColumn.column_name}","${upda
                         during={1200}
                         placeholder={"Random Anything"}
                       >
-                        <button onClick={() => deletingData(curUser.ID)}>
+                        <button
+                          onClick={() => deletingData(curUser[idPropertyName])}
+                        >
                           Delete
                         </button>
                       </Ripples>
