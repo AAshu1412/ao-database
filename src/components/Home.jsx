@@ -28,10 +28,8 @@ export default function Home() {
   const [changeFromCustomToUserInput, setchangeFromCustomToUserInput] =
     useState(false);
   const [rowIndex, setRowIndex] = useState(null);
-  const [rowUpdate,setRowUpdate]=useState({});
-  const [rowInputUpdate,setRowInputUpdate]=useState({});
-
-
+  const [rowUpdate, setRowUpdate] = useState({});
+  const [rowInputUpdate, setRowInputUpdate] = useState({});
 
   const stripAnsiCodes = (str) =>
     str.replace(
@@ -117,6 +115,7 @@ return all_attribute`,
       const _data = stripAnsiCodes(res1.Output.data);
       const valuesArray = extractValues(_data);
       setAllColumn(valuesArray);
+      // gettingDataInDatabase(databaseName);
     } else {
       console.log(
         "showingAllColumns Data " + stripAnsiCodes(res1.Output.data.output)
@@ -489,7 +488,7 @@ update_values_into_table("${databaseName}","${updateColumn.column_name}","${upda
   };
   console.log(allData);
 
-  const justcheck=async (delete_data)=>{
+  const justcheck = async (delete_data) => {
     try {
       const messageId = await message({
         process: currentProcessID,
@@ -500,7 +499,9 @@ update_values_into_table("${databaseName}","${updateColumn.column_name}","${upda
       db = db or sqlite3.open_memory()
 
     local result = db:exec(string.format([[
-        DELETE FROM "${databaseName}" WHERE (${Object.entries(delete_data).map(val=>`"${val[0]}" = "${val[1]}"`).join(" AND ")})
+        DELETE FROM "${databaseName}" WHERE (${Object.entries(delete_data)
+          .map((val) => `"${val[0]}" = "${val[1]}"`)
+          .join(" AND ")})
     ]]))
     if result ~= sqlite3.OK then
         error("Failed to insert values: " .. db:errmsg())
@@ -517,83 +518,85 @@ update_values_into_table("${databaseName}","${updateColumn.column_name}","${upda
       console.log("deletingData data " + JSON.stringify(res1));
       await gettingDataInDatabase(databaseName);
       toast.success("Data Deleted Successfully");
-// console.log(JSON.stringify(delete_data));
+      // console.log(JSON.stringify(delete_data));
     } catch (error) {
       console.log(error);
       toast.error("Data Not Deleted");
-    }  }
-
-
-    const justUpdate=async(_data,_id)=>{
-      setRowIndex(_id);
-      console.log(JSON.stringify(_data));
-      setRowUpdate(_data);
-      setRowInputUpdate(_data);
     }
-    const handInputIOOO=async(event)=>{
-      const name = event.target.name;
-      const value = event.target.value;
-      // console.log(name, value);
-      setRowInputUpdate({ ...rowUpdate, [name]: value });
-              }
-    const dattaUpate=async()=>{
+  };
 
-try {
-  console.log(JSON.stringify(rowInputUpdate));
-  console.log(JSON.stringify(rowUpdate));
-  const constOne=Object.keys(rowUpdate);
-  const UpdateOne=Object.keys(rowInputUpdate);
-  const whereOne={};
-  const setOne={};
-  
-  
-  for(let i of constOne){
-    if (rowInputUpdate[i]==rowUpdate[i]){
-            whereOne[i]=rowInputUpdate[i];
-    }
-    else{
-      setOne[i]=rowInputUpdate[i];
-    }
-  }
-  console.log("ayushhhhhhhh : "+JSON.stringify(whereOne));
-  console.log("ashuuuuuuuuu : "+JSON.stringify(setOne));  console.log("popopjmimknj : " + updateColumn.id);
-  console.log(
-    "updateColumn.new_column_data : " + updateColumn.new_column_data
-  );
+  const justUpdate = async (_data, _id) => {
+    setRowIndex(_id);
+    console.log(JSON.stringify(_data));
+    setRowUpdate(_data);
+    setRowInputUpdate(_data);
+  };
+  const handInputIOOO = async (event) => {
+    const name = event.target.name;
+    const value = event.target.value;
+    // console.log(name, value);
+    setRowInputUpdate({ ...rowUpdate, [name]: value });
+  };
+  const dattaUpate = async () => {
+    try {
+      console.log(JSON.stringify(rowInputUpdate));
+      console.log(JSON.stringify(rowUpdate));
+      const constOne = Object.keys(rowUpdate);
+      const UpdateOne = Object.keys(rowInputUpdate);
+      const whereOne = {};
+      const setOne = {};
 
-  console.log("updateColumn.column_name : " + updateColumn.column_name);
+      for (let i of constOne) {
+        if (rowInputUpdate[i] == rowUpdate[i]) {
+          whereOne[i] = rowInputUpdate[i];
+        } else {
+          setOne[i] = rowInputUpdate[i];
+        }
+      }
+      console.log("ayushhhhhhhh : " + JSON.stringify(whereOne));
+      console.log("ashuuuuuuuuu : " + JSON.stringify(setOne));
+      console.log("popopjmimknj : " + updateColumn.id);
+      console.log(
+        "updateColumn.new_column_data : " + updateColumn.new_column_data
+      );
 
-  console.log("databaseName : " + databaseName);
+      console.log("updateColumn.column_name : " + updateColumn.column_name);
 
-  const messageId = await message({
-    process: currentProcessID,
-    signer: createDataItemSigner(window.arweaveWallet),
-    tags: [{ name: "Action", value: "Eval" }],
-    data: `
+      console.log("databaseName : " + databaseName);
+
+      const messageId = await message({
+        process: currentProcessID,
+        signer: createDataItemSigner(window.arweaveWallet),
+        tags: [{ name: "Action", value: "Eval" }],
+        data: `
 sqlite3 = require('lsqlite3')
   db = db or sqlite3.open_memory()
 local result = db:exec(string.format([[
-    UPDATE "${databaseName}" SET ${Object.keys(setOne).map(val=> `"${val}"="${setOne[val]}"`).join(", ")} WHERE (${Object.keys(whereOne).map(val=> `"${val}"="${whereOne[val]}"`).join(" AND ")})
+    UPDATE "${databaseName}" SET ${Object.keys(setOne)
+          .map((val) => `"${val}"="${setOne[val]}"`)
+          .join(", ")} WHERE (${Object.keys(whereOne)
+          .map((val) => `"${val}"="${whereOne[val]}"`)
+          .join(" AND ")})
 ]]))
 if result ~= sqlite3.OK then
     error("Failed to insert values: " .. db:errmsg())
 end
  `,
-  });
-  console.log("updatingData idddddd " + messageId);
-  let res1 = await result({
-    message: messageId,
-    process: currentProcessID,
-  });
-  console.log("updatingData data " + JSON.stringify(res1));
-  await gettingDataInDatabase(databaseName);
-  setRowIndex(-1);
-  toast.success("Data Updated Successfully");
-} catch (error) {
-  console.log(error);
-  toast.error("Data Not Updated");
-}
+      });
+      console.log("updatingData idddddd " + messageId);
+      let res1 = await result({
+        message: messageId,
+        process: currentProcessID,
+      });
+      console.log("updatingData data " + JSON.stringify(res1));
+      await gettingDataInDatabase(databaseName);
+      setRowIndex(-1);
+      toast.success("Data Updated Successfully");
+    } catch (error) {
+      console.log(error);
+      toast.error("Data Not Updated");
     }
+  };
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -638,7 +641,6 @@ end
                   <button
                     className="bg-orange-600 w-24 h-10 text-xl font-medium rounded-md"
                     onClick={load}
-
                   >
                     Load
                   </button>
@@ -890,27 +892,25 @@ end
                     {allColumn.map((columnName, columnIndex) => {
                       return (
                         <>
-                          {
-                            rowIndex === index ? (<td className="border px-4 py-2 whitespace-nowrap text-xl">
-                              
+                          {rowIndex === index ? (
+                            <td className="border px-4 py-2 whitespace-nowrap text-xl">
                               {
-                              //   Object.values(rowUpdate).map((val,key)=>{
-                              // return(  index == key ? ( <input
-                              //     key={key}
-                              //     // type="text"
-                              //     // required
-                              //     autoComplete="off"
-                              //     value={val}
-                              //     onChange={handleUpdateInput}
-                              //     name="new_column_data"
-                              //     id="new_column_data"
-                              //     className="w-auto border-black border-2 rounded-md"
-                              // / >):(<></>
-                              //    ))
+                                //   Object.values(rowUpdate).map((val,key)=>{
+                                // return(  index == key ? ( <input
+                                //     key={key}
+                                //     // type="text"
+                                //     // required
+                                //     autoComplete="off"
+                                //     value={val}
+                                //     onChange={handleUpdateInput}
+                                //     name="new_column_data"
+                                //     id="new_column_data"
+                                //     className="w-auto border-black border-2 rounded-md"
+                                // / >):(<></>
+                                //    ))
 
-                              
-                              // })
-                              <input
+                                // })
+                                <input
                                   // type="text"
                                   // required
                                   autoComplete="off"
@@ -920,22 +920,22 @@ end
                                   id={columnName}
                                   className="w-auto border-black border-2 rounded-md"
                                   onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
+                                    if (e.key === "Enter") {
                                       dattaUpate();
                                     }
                                   }}
-                              / >
-
+                                />
                               }
-                          
-                            </td>) : ( <td
+                            </td>
+                          ) : (
+                            <td
                               key={columnIndex}
                               className="border px-4 py-2 whitespace-nowrap text-xl"
                             >
                               {curUser[columnName]}
-                            </td>) 
-                          }
-                       </>
+                            </td>
+                          )}
+                        </>
                       );
                     })}
                     <td className="border px-4 py-2 bg-orange-600 rounded-md text-center text-xl font-medium">
@@ -944,10 +944,8 @@ end
                         during={1200}
                         placeholder={"Random Anything"}
                       >
-                        <button
-                          onClick={() =>justcheck(curUser) }
-                        >
-                        {/* deletingData(curUser[idPropertyName]) */}
+                        <button onClick={() => justcheck(curUser)}>
+                          {/* deletingData(curUser[idPropertyName]) */}
                           Delete
                         </button>
                       </Ripples>
@@ -959,10 +957,7 @@ end
                         placeholder={"Random Anything"}
                       >
                         <button
-                          onClick={() =>
-                            justUpdate(curUser,index)
-                           
-                          }
+                          onClick={() => justUpdate(curUser, index)}
                           // handleUpdateDataFunction(curUser[idPropertyName])
                           className="w-auto"
                         >
